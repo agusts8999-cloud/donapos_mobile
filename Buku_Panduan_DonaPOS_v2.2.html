@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buku Panduan DonaPOS Mobile</title>
+    <style>
+        body { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; max-width: 210mm; margin: 0 auto; padding: 20px; background: #fff; }
+        h1, h2, h3 { color: #1a1a1a; font-weight: 800; }
+        h1 { border-bottom: 2px solid #0078D7; padding-bottom: 10px; font-size: 28pt; margin-top: 50px; }
+        h2 { margin-top: 30px; border-left: 5px solid #0078D7; padding-left: 10px; font-size: 18pt; background: #f4f4f4; padding-top: 5px; padding-bottom: 5px; }
+        h3 { margin-top: 20px; font-size: 14pt; color: #0078D7; }
+        .page-break { page-break-after: always; }
+        .note { background: #fff8e1; border-left: 4px solid #ffc107; padding: 15px; margin: 15px 0; font-size: 0.9em; }
+        .warning { background: #ffebee; border-left: 4px solid #f44336; padding: 15px; margin: 15px 0; font-size: 0.9em; }
+        .step-box { background: #f9f9f9; border: 1px solid #ddd; padding: 15px; border-radius: 5px; margin-bottom: 10px; }
+        .step-number { font-weight: bold; color: #0078D7; margin-right: 10px; }
+        code { background: #f0f0f0; padding: 2px 5px; border-radius: 3px; font-family: monospace; color: #d32f2f; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #0078D7; color: white; }
+        .cover { text-align: center; padding-top: 150px; }
+        .cover h1 { border: none; font-size: 36pt; color: #000; }
+        .cover p { font-size: 14pt; color: #666; }
+        .footer { position: fixed; bottom: 0; width: 100%; text-align: center; font-size: 9pt; color: #999; }
+        @media print {
+            body { background: white; margin: 0; padding: 0; }
+            .no-print { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- COVER -->
+    <div class="cover">
+        <h1 style="color: #0078D7;">DonaPOS Mobile</h1>
+        <p>Buku Panduan Operasional & Teknis</p>
+        <br>
+        <p><strong>Versi Aplikasi: v2.2.0 (Build 72)</strong></p>
+        <p>Edisi Metro UI & Advanced Security</p>
+        <br><br><br>
+        <p>&copy; 2026 DonaPOS Enterprise System</p>
+    </div>
+    <div class="page-break"></div>
+
+    <!-- DAFTAR ISI -->
+    <h2>Daftar Isi</h2>
+    <ul>
+        <li><strong>Bab 1:</strong> Pengenalan Sistem & Arsitektur</li>
+        <li><strong>Bab 2:</strong> Persiapan Awal (Admin)</li>
+        <li><strong>Bab 3:</strong> Operasional Harian (Kasir)</li>
+        <li><strong>Bab 4:</strong> Manajemen Transaksi & Pembayaran</li>
+        <li><strong>Bab 5:</strong> Keamanan & Otorisasi (OTP Vendor)</li>
+        <li><strong>Bab 6:</strong> Laporan & Penutupan (Closing)</li>
+    </ul>
+    <div class="page-break"></div>
+
+    <!-- BAB 1 -->
+    <h1>Bab 1: Pengenalan Sistem</h1>
+    <p>DonaPOS adalah sistem Point of Sales (POS) berbasis Cloud yang dirancang dengan arsitektur Hybrid untuk menjamin kecepatan transaksi offline dengan kemudahan manajemen online.</p>
+
+    <h3>Konsep Backoffice vs Mobile</h3>
+    <table>
+        <tr>
+            <th>Komponen</th>
+            <th>Backoffice ERP (Web)</th>
+            <th>Mobile POS (Tablet)</th>
+        </tr>
+        <tr>
+            <td><strong>Fungsi Utama</strong></td>
+            <td>Pusat Komando (Manajemen)</td>
+            <td>Ujung Tombak (Operasional)</td>
+        </tr>
+        <tr>
+            <td><strong>Pengguna</strong></td>
+            <td>Owner, Manager, Admin Gudang</td>
+            <td>Kasir, Waitress</td>
+        </tr>
+        <tr>
+            <td><strong>Kegiatan</strong></td>
+            <td>Input Produk, Ubah Harga, Cek Laporan</td>
+            <td>Input Pesanan, Terima Bayaran, Cetak Struk</td>
+        </tr>
+        <tr>
+            <td><strong>Koneksi</strong></td>
+            <td>Wajib Online</td>
+            <td>Bisa Offline (Upload Data belakangan)</td>
+        </tr>
+    </table>
+
+    <div class="note">
+        <strong>Penting:</strong> Mobile POS tidak bisa digunakan untuk membuat produk baru. Anda harus membuat produk di Backoffice ERP terlebih dahulu, lalu melakukan <em>Sync Data</em> di Tablet.
+    </div>
+
+    <div class="page-break"></div>
+
+    <!-- BAB 2 -->
+    <h1>Bab 2: Persiapan Awal (Admin)</h1>
+    <p>Langkah ini dilakukan oleh Manajer atau Kapten Shift untuk menyiapkan tablet sebelum digunakan oleh kasir.</p>
+
+    <h3>2.1 Login Administrator</h3>
+    <div class="step-box">
+        <span class="step-number">1.</span> Buka aplikasi <strong>DonaPOS Mobile</strong>.<br>
+        <span class="step-number">2.</span> Di layar Login Utama, masukkan kredensial Admin:<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;• Username: <code>tashia</code><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;• Password: <code>12345</code><br>
+        <span class="step-number">3.</span> Tekan tombol **MASUK**.<br>
+        <span class="step-number">4.</span> Sistem akan memverifikasi ke server (membutuhkan internet).
+    </div>
+
+    <h3>2.2 Sinkronisasi Data (Sync Center)</h3>
+    <p>Setelah login admin berhasil, Anda akan masuk ke layar pemilihan user. Jangan pilih user dulu, tapi lakukan sinkronisasi.</p>
+    <div class="step-box">
+        <span class="step-number">1.</span> Tekan tombol <strong>Gerigi (Settings)</strong> di kiri bawah untuk masuk ke Admin Dashboard.<br>
+        <span class="step-number">2.</span> Pilih menu <strong>Sync Center</strong>.<br>
+        <span class="step-number">3.</span> Tekan tombol <strong>SINKRON SEMUA (FULL)</strong>.<br>
+        <span class="step-number">4.</span> Tunggu hingga semua kotak indikator berwarna hijau.<br>
+        <span class="step-number">5.</span> Tekan <strong>TUTUP / SELESAI</strong>.
+    </div>
+
+    <div class="page-break"></div>
+
+    <!-- BAB 3 -->
+    <h1>Bab 3: Operasional Harian (Kasir)</h1>
+    <p>Panduan ini untuk staf kasir (contoh: Aurel) dalam memulai hari kerja.</p>
+
+    <h3>3.1 Membuka Sesi Kasir</h3>
+    <div class="step-box">
+        <span class="step-number">1.</span> Di Layar Pemilihan User, cari kotak bernama <strong>AUREL</strong>.<br>
+        <span class="step-number">2.</span> Klik pada nama Aurel.<br>
+        <span class="step-number">3.</span> Layar PIN akan muncul. Masukkan PIN keamanan: <code>12345</code>.<br>
+        <span class="step-number">4.</span> Tekan tombol <strong>ENTER (↵)</strong>.<br>
+    </div>
+
+    <h3>3.2 Absensi (Clock In)</h3>
+    <p>Sistem DonaPOS mewajibkan absensi sebelum transaksi.</p>
+    <div class="step-box">
+        <span class="step-number">1.</span> Jika belum absen, popup peringatan <em>ATTENDANCE REQUIRED</em> akan muncul.<br>
+        <span class="step-number">2.</span> Aplikasi akan membuka kamera depan.<br>
+        <span class="step-number">3.</span> Lakukan selfie/foto wajah.<br>
+        <span class="step-number">4.</span> Tekan tombol <strong>CLOCK IN</strong>.<br>
+        <span class="step-number">5.</span> Jika berhasil, Anda akan masuk ke layar penjualan (POS Screen).
+    </div>
+
+    <div class="page-break"></div>
+
+    <!-- BAB 4 -->
+    <h1>Bab 4: Manajemen Transaksi</h1>
+
+    <h3>4.1 Alur Transaksi Standar</h3>
+    <ol>
+        <li>Tentukan <strong>Tipe Pesanan</strong> di Header atas (Dine In / Take Away / Online). Harga akan menyesuaikan otomatis.</li>
+        <li>Pilih <strong>Kategori</strong> di sebelah kiri (misal: COFFEE).</li>
+        <li>Tekan gambar produk untuk memasukkan ke keranjang.</li>
+        <li>Jika produk memiliki varian (misal: Hot/Ice), popup pilihan akan muncul.</li>
+    </ol>
+
+    <h3>4.2 Proses Pembayaran</h3>
+    <div class="step-box">
+        <span class="step-number">1.</span> Periksa ringkasan pesanan di panel kanan.<br>
+        <span class="step-number">2.</span> Tekan tombol <strong>BAYAR SEKARANG</strong>.<br>
+        <span class="step-number">3.</span> Di Dialog Pembayaran, pilih metode bayar (Tunai, Kartu, QRIS).<br>
+        <span class="step-number">4.</span> Untuk Tunai, gunakan tombol <strong>Uang Cepat</strong> (20k, 50k, 100k) atau ketik manual.<br>
+        <span class="step-number">5.</span> Tekan tombol <strong>SELESAIKAN TRANSAKSI</strong>.<br>
+        <span class="step-number">6.</span> Lakukan pencetakan struk (Cetak 1x atau Duplikasi).
+    </div>
+
+    <h3>4.3 Manajemen Meja</h3>
+    <p>Untuk pesanan Dine In, Anda bisa memilih nomor meja sebelum atau sesudah memilih produk dengan menekan tombol <strong>MEJA</strong> di header.</p>
+
+    <div class="page-break"></div>
+
+    <!-- BAB 5 -->
+    <h1>Bab 5: Keamanan & OTP (Baru di v2.2)</h1>
+    <p>Untuk melindungi data sensitif (seperti Reset Database atau Pengaturan Server), DonaPOS v2.2 menggunakan sistem keamanan tingkat lanjut.</p>
+
+    <h3>Mekanisme Challenge-Response</h3>
+    <p>Tidak ada lagi password statis untuk menu Admin tingkat tinggi. Sistem bekerja sebagai berikut:</p>
+    <div class="warning">
+        <strong>PENTING:</strong> Sistem ini memerlukan 2 perangkat: Tablet Kasir dan HP Vendor (Owner).
+    </div>
+
+    <table border="0" style="border:none;">
+        <tr style="border:none;">
+            <td style="border:none; width: 50%; vertical-align: top;">
+                <h4>1. Di Tablet Kasir</h4>
+                <p>Saat kasir mencoba mengakses menu sensitif, Tablet akan menampilkan <strong>4 Digit Angka Acak</strong> (Nomor Respon).
+                <br><em>Contoh: 4582</em></p>
+                <p>Kasir harus menyebutkan nomor ini ke Owner.</p>
+            </td>
+            <td style="border:none; width: 50%; vertical-align: top;">
+                <h4>2. Di HP Owner (Aplikasi OTP)</h4>
+                <p>Owner membuka aplikasi <strong>DonaPOS OTP Vendor</strong> di HP pribadinya. Masukkan angka 4582 tersebut.</p>
+                <p>Aplikasi HP akan menghasilkan <strong>6 Digit Kode Kunci</strong>.
+                <br><em>Contoh: 882910</em></p>
+            </td>
+        </tr>
+    </table>
+    <p>Owner memberikan 6 digit kode tersebut ke Kasir untuk membuka kunci sistem.</p>
+
+    <div class="page-break"></div>
+
+    <!-- BAB 6 -->
+    <h1>Bab 6: Laporan & Closing</h1>
+
+    <h3>6.1 Mencetak Laporan Shift</h3>
+    <p>Dilakukan saat pergantian kasir (misal: Shift Pagi ke Sore).</p>
+    <div class="step-box">
+        <span class="step-number">1.</span> Masuk ke Dashboard Admin (Ikon Gerigi).<br>
+        <span class="step-number">2.</span> Pilih menu <strong>LAPORAN & CLOSING</strong>.<br>
+        <span class="step-number">3.</span> Pilih tab <strong>Ringkasan Shift</strong>.<br>
+        <span class="step-number">4.</span> Tekan <strong>CETAK LAPORAN SHIFT</strong>.
+    </div>
+
+    <h3>6.2 Closing Harian (Z-Report)</h3>
+    <p>Dilakukan saat toko tutup total.</p>
+    <div class="step-box">
+        <span class="step-number">1.</span> Pastikan semua transaksi hari itu suda di-upload (Menu Posting Sales).<br>
+        <span class="step-number">2.</span> Masuk ke menu <strong>LAPORAN & CLOSING</strong> > tab <strong>Z-Report Harian</strong>.<br>
+        <span class="step-number">3.</span> Periksa total omzet, diskon, dan uang fisik.<br>
+        <span class="step-number">4.</span> Tekan tombol merah <strong>CLOSING HARIAN</strong>.<br>
+        <span class="step-number">5.</span> Konfirmasi <strong>YA, CLOSING</strong>.<br>
+        <span class="step-number">6.</span> Struk panjang rekap harian akan tercetak otomatis.
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,64 @@
+Resolving dependencies...
+Downloading packages...
+  archive 4.0.7 (4.0.9 available)
+  csv 6.0.0 (7.1.0 available)
+  device_info_plus 10.1.2 (12.3.0 available)
+  ffi 2.1.5 (2.2.0 available)
+  file_picker 8.3.7 (10.3.10 available)
+  fl_chart 0.68.0 (1.1.1 available)
+  flutter_launcher_icons 0.13.1 (0.14.4 available)
+  flutter_lints 3.0.2 (6.0.0 available)
+  image 4.7.2 (4.8.0 available)
+  image_cropper 8.1.0 (11.0.0 available)
+  image_cropper_for_web 6.1.0 (7.0.0 available)
+  image_cropper_platform_interface 7.2.0 (8.0.0 available)
+  intl 0.19.0 (0.20.2 available)
+  json_annotation 4.10.0 (4.11.0 available)
+  lints 3.0.0 (6.1.0 available)
+  meta 1.17.0 (1.18.1 available)
+  path_provider_foundation 2.5.1 (2.6.0 available)
+  permission_handler 11.4.0 (12.0.1 available)
+  permission_handler_android 12.1.0 (13.0.1 available)
+  petitparser 7.0.1 (7.0.2 available)
+  posix 6.0.3 (6.5.0 available)
+  shared_preferences_android 2.4.20 (2.4.21 available)
+! sqflite_android 2.4.1 (overridden) (2.4.2+2 available)
+  url_launcher_ios 6.3.6 (6.4.1 available)
+  url_launcher_web 2.4.1 (2.4.2 available)
+  uuid 4.5.2 (4.5.3 available)
+  win32 5.15.0 (6.0.0 available)
+  win32_registry 1.1.5 (3.0.0 available)
+Got dependencies!
+28 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+Running Gradle task 'assembleDebug'...                          
+lib/widgets/product_label_settings_dialog.dart:313:8: Error: Type 'BluetoothInfo' not found.
+  List<BluetoothInfo> _devices = [];
+       ^^^^^^^^^^^^^
+lib/widgets/product_label_settings_dialog.dart:335:17: Error: Type 'BluetoothInfo' not found.
+  void _connect(BluetoothInfo d) async {
+                ^^^^^^^^^^^^^
+lib/widgets/product_label_settings_dialog.dart:313:8: Error: 'BluetoothInfo' isn't a type.
+  List<BluetoothInfo> _devices = [];
+       ^^^^^^^^^^^^^
+lib/widgets/product_label_settings_dialog.dart:335:17: Error: 'BluetoothInfo' isn't a type.
+  void _connect(BluetoothInfo d) async {
+                ^^^^^^^^^^^^^
+Target kernel_snapshot_program failed: Exception
+
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':app:compileFlutterBuildDebug'.
+> Process 'command 'C:\src\flutter\bin\flutter.bat'' finished with non-zero exit value 1
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 11s
+Running Gradle task 'assembleDebug'...                             12.0s
+Gradle task assembleDebug failed with exit code 1

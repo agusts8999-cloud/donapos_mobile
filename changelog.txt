@@ -1,0 +1,77 @@
+DONAPOS MOBILE - RELEASE NOTES
+Version: 2.5.10+4035
+Date: 2026-01-31
+
+FITUR TERBARU:
+
+1. MANAJEMEN HARGA TOPPING (Enhanced Modifier Pricing)
+   - Input harga topping kini lebih fleksibel (Default Rp 0).
+   - Dialog input harga baru dengan Numpad dan Tombol Cepat (1k, 2k, 5k, 10k).
+   - Tampilan visual harga pada setiap opsi topping (Free / +Harga).
+
+-----------------------------------------------------------
+Version: 2.5.6+81
+
+1. INDIKATOR STATUS SINKRONISASI (Cloud Sync Status)
+   - Indikator "SYNCED / PENDING" yang menonjol pada App Bar.
+   - Deteksi transaksi belum terunggah (Pending) secara real-time.
+   - Warna dinamis (Hijau = Aman, Merah = Ada Pending).
+   - Pintasan langsung ke Cloud Sync Center dengan sekali tap.
+
+2. GRAFIK ANALISA PENJUALAN (Sales Analytics)
+   - Visualisasi data dalam bentuk Grafik Batang (Bar), Garis (Line), dan Lingkaran (Pie).
+   - Filter rentang waktu custom atau preset (1 Minggu, 1 Bulan, 1 Tahun).
+   - Analisa kontribusi penjualan per kategori produk (Pie Chart).
+   - Terintegrasi langsung dalam menu Laporan/Closing.
+
+-----------------------------------------------------------
+Version: 2.5.5+80
+Date: 2026-01-30
+
+1. REFACTOR POS SCREEN (Major Update)
+   - Pembagian ulang struktur layar kasir menjadi komponen terpisah (ScanBar, Sidebar, Grid, Panel Cart).
+   - Kode lebih rapi, ringan, dan mudah dikelola (Maintainable).
+   - Penggunaan PosProvider untuk manajemen state yang lebih efisien (Provider Pattern).
+
+2. FITUR SPLIT PAYMENT (Pembayaran Terpisah)
+   - Mendukung pembayaran gabungan dalam satu transaksi (Tunai + Kartu + Transfer, dll).
+   - Validasi sisa tagihan otomatis (Belum Lunas / Lunas).
+   - Tampilan ringkasan pembayaran yang modern dan informatif.
+   - Perbaikan alur pembayaran (Payment Flow) yang lebih intuitif.
+
+3. OPTIMASI UI/UX
+   - Dialog "Pilih Meja" baru dengan opsi sinkron dan manual input yang jelas.
+   - Dialog "List Transaksi Hold" yang lebih detil.
+   - Tampilan konfirmasi pembayaran yang lebih aman dan jelas.
+   - Perbaikan tata letak tombol dan responsivitas layar.
+
+4. SISTEM (Improvements)
+   - Perbaikan logika sinkronisasi transaksi ke server (Upload Transaction).
+   - Penambahan validasi saat input diskon manual.
+   - Integrasi ulang logika print struk (Kitchen & Customer) pada struktur baru.
+
+-----------------------------------------------------------
+Version: 2.0.2+30
+Date: 2026-01-26
+
+FITUR BARU & PERBAIKAN:
+
+1. Pemeliharaan Sistem
+   - Fitur Quick Backup (Satu Klik) di Menu Kasir.
+   - Folder backup otomatis berdasarkan tanggal & jam (BK_YYYYMMDD_HHMMSS).
+   - Fitur Backup & Restore manual di Admin Dashboard.
+
+2. POS & Manajemen Diskon (Redesign)
+   - Tampilan Dialog Diskon Manual baru (Grey/Modern Aesthetic).
+   - Manajemen Diskon Lokal lebih kompak dan seamless.
+   - Perbaikan bug kalkulasi diskon manual (logika per-item).
+
+3. Keamanan & Operasional
+   - Checklist konfirmasi sebelum Closing Day (Setoran, Kompor/Gas, Kunci).
+   - Tombol "Admin Dashboard" dihapus dari menu kasir (akses via khusus).
+   - Penambahan pemisah ribuan otomatis pada input nominal diskon.
+
+4. UI/UX Improvements
+   - Perbaikan masalah "Overflow" pada menu laporan di tablet resolusi rendah.
+   - Peningkatan kontras warna dan ukuran font pada dialog manajemen.
+   - Tab laporan sekarang dapat digeser (scrollable).

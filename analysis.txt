@@ -1,0 +1,673 @@
+Resolving dependencies...
+Downloading packages...
+  characters 1.4.0 (1.4.1 available)
+  device_info_plus 10.1.2 (12.3.0 available)
+  file_picker 8.3.7 (10.3.10 available)
+  flutter_launcher_icons 0.13.1 (0.14.4 available)
+  flutter_lints 3.0.2 (6.0.0 available)
+  image_cropper 8.1.0 (11.0.0 available)
+  image_cropper_for_web 6.1.0 (7.0.0 available)
+  image_cropper_platform_interface 7.2.0 (8.0.0 available)
+  intl 0.19.0 (0.20.2 available)
+  json_annotation 4.9.0 (4.10.0 available)
+  lints 3.0.0 (6.0.0 available)
+  matcher 0.12.17 (0.12.18 available)
+  material_color_utilities 0.11.1 (0.13.0 available)
+  meta 1.16.0 (1.18.1 available)
+  path_provider_foundation 2.5.1 (2.6.0 available)
+  permission_handler 11.4.0 (12.0.1 available)
+  permission_handler_android 12.1.0 (13.0.1 available)
+  shared_preferences_android 2.4.18 (2.4.20 available)
+! sqflite_android 2.4.1 (overridden) (2.4.2+2 available)
+  test_api 0.7.6 (0.7.9 available)
+  url_launcher_web 2.4.1 (2.4.2 available)
+  win32_registry 1.1.5 (2.1.0 available)
+Got dependencies!
+22 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+Analyzing donapos_mobile...                                     
+
+warning • The value of the local variable 'menuIcon' isn't used • integration_test/screenshot_automation_test.dart:87:11 • unused_local_variable
+warning • Unused import: 'package:donapos_mobile/models.dart' • lib/api_service.dart:9:8 • unused_import
+   info • Don't invoke 'print' in production code • lib/api_service.dart:15:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/api_service.dart:111:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/api_service.dart:114:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/api_service.dart:168:11 • avoid_print
+   info • Don't invoke 'print' in production code • lib/api_service.dart:233:24 • avoid_print
+   info • Don't invoke 'print' in production code • lib/api_service.dart:267:28 • avoid_print
+   info • Don't invoke 'print' in production code • lib/api_service.dart:270:32 • avoid_print
+   info • Don't invoke 'print' in production code • lib/api_service.dart:278:28 • avoid_print
+   info • Don't invoke 'print' in production code • lib/api_service.dart:282:20 • avoid_print
+   info • Don't invoke 'print' in production code • lib/api_service.dart:286:11 • avoid_print
+   info • Don't invoke 'print' in production code • lib/api_service.dart:300:11 • avoid_print
+   info • Don't invoke 'print' in production code • lib/api_service.dart:338:11 • avoid_print
+warning • The value of the local variable 'existingWaiters' isn't used • lib/api_service.dart:362:25 • unused_local_variable
+   info • Don't invoke 'print' in production code • lib/api_service.dart:366:18 • avoid_print
+   info • Don't invoke 'print' in production code • lib/api_service.dart:373:19 • avoid_print
+   info • Don't invoke 'print' in production code • lib/api_service.dart:408:11 • avoid_print
+   info • Use 'rethrow' to rethrow a caught exception • lib/api_service.dart:409:11 • use_rethrow_when_possible
+   info • Don't invoke 'print' in production code • lib/api_service.dart:428:7 • avoid_print
+   info • Statements in an if should be enclosed in a block • lib/api_service.dart:481:44 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/api_service.dart:482:28 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/api_service.dart:484:54 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/api_service.dart:485:28 • curly_braces_in_flow_control_structures
+   info • Don't invoke 'print' in production code • lib/api_service.dart:488:19 • avoid_print
+   info • Don't invoke 'print' in production code • lib/api_service.dart:496:11 • avoid_print
+   info • Don't invoke 'print' in production code • lib/api_service.dart:500:11 • avoid_print
+   info • Don't invoke 'print' in production code • lib/api_service.dart:541:15 • avoid_print
+   info • Don't invoke 'print' in production code • lib/api_service.dart:572:13 • avoid_print
+   info • Don't invoke 'print' in production code • lib/api_service.dart:575:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/api_service.dart:586:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/api_service.dart:589:11 • avoid_print
+   info • Don't invoke 'print' in production code • lib/api_service.dart:594:15 • avoid_print
+   info • Don't invoke 'print' in production code • lib/api_service.dart:611:15 • avoid_print
+   info • Don't invoke 'print' in production code • lib/api_service.dart:614:11 • avoid_print
+   info • Don't invoke 'print' in production code • lib/api_service.dart:626:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/api_service.dart:627:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/api_service.dart:635:11 • avoid_print
+   info • Don't invoke 'print' in production code • lib/api_service.dart:636:11 • avoid_print
+   info • Don't invoke 'print' in production code • lib/api_service.dart:640:15 • avoid_print
+   info • Don't invoke 'print' in production code • lib/api_service.dart:661:19 • avoid_print
+   info • Don't invoke 'print' in production code • lib/api_service.dart:664:19 • avoid_print
+   info • Don't invoke 'print' in production code • lib/api_service.dart:667:15 • avoid_print
+   info • Don't invoke 'print' in production code • lib/api_service.dart:670:11 • avoid_print
+   info • Don't invoke 'print' in production code • lib/api_service.dart:671:11 • avoid_print
+   info • Don't invoke 'print' in production code • lib/api_service.dart:693:15 • avoid_print
+   info • Don't invoke 'print' in production code • lib/api_service.dart:697:11 • avoid_print
+   info • Don't invoke 'print' in production code • lib/api_service.dart:721:15 • avoid_print
+   info • Don't invoke 'print' in production code • lib/api_service.dart:725:11 • avoid_print
+   info • Don't invoke 'print' in production code • lib/api_service.dart:783:7 • avoid_print
+   info • The local variable '_add' starts with an underscore • lib/api_service.dart:811:28 • no_leading_underscores_for_local_identifiers
+   info • Don't invoke 'print' in production code • lib/api_service.dart:837:15 • avoid_print
+   info • Don't invoke 'print' in production code • lib/api_service.dart:841:11 • avoid_print
+   info • Don't invoke 'print' in production code • lib/api_service.dart:859:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/api_service.dart:872:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/api_service.dart:950:33 • avoid_print
+   info • Don't invoke 'print' in production code • lib/api_service.dart:998:13 • avoid_print
+   info • Statements in an if should be enclosed in a block • lib/api_service.dart:1004:38 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/api_service.dart:1005:22 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/api_service.dart:1007:48 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/api_service.dart:1008:22 • curly_braces_in_flow_control_structures
+   info • Don't invoke 'print' in production code • lib/api_service.dart:1011:14 • avoid_print
+   info • Don't invoke 'print' in production code • lib/api_service.dart:1020:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/api_service.dart:1024:7 • avoid_print
+   info • Statements in an if should be enclosed in a block • lib/api_service.dart:1088:44 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/api_service.dart:1089:28 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/api_service.dart:1091:54 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/api_service.dart:1092:28 • curly_braces_in_flow_control_structures
+   info • Don't invoke 'print' in production code • lib/api_service.dart:1099:11 • avoid_print
+   info • Don't invoke 'print' in production code • lib/api_service.dart:1114:7 • avoid_print
+   info • Statements in an if should be enclosed in a block • lib/api_service.dart:1125:44 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/api_service.dart:1126:24 • curly_braces_in_flow_control_structures
+   info • Don't invoke 'print' in production code • lib/api_service.dart:1140:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/api_service.dart:1188:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/api_service.dart:1276:14 • avoid_print
+   info • Don't invoke 'print' in production code • lib/api_service.dart:1312:11 • avoid_print
+   info • Don't invoke 'print' in production code • lib/api_service.dart:1379:11 • avoid_print
+   info • Don't invoke 'print' in production code • lib/api_service.dart:1395:25 • avoid_print
+   info • Don't invoke 'print' in production code • lib/api_service.dart:1402:11 • avoid_print
+   info • Don't invoke 'print' in production code • lib/api_service.dart:1415:9 • avoid_print
+   info • Use 'const' for final variables initialized to a constant value • lib/api_service.dart:1454:9 • prefer_const_declarations
+warning • The value of the local variable 'totalItemDiscounts' isn't used • lib/api_service.dart:1477:28 • unused_local_variable
+warning • The value of the local variable 'finalRoundOff' isn't used • lib/api_service.dart:1547:28 • unused_local_variable
+   info • Don't invoke 'print' in production code • lib/api_service.dart:1615:47 • avoid_print
+   info • Don't invoke 'print' in production code • lib/api_service.dart:1689:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/api_service.dart:1732:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/api_service.dart:1752:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/api_service.dart:1788:14 • avoid_print
+   info • Don't invoke 'print' in production code • lib/api_service.dart:1806:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/api_service.dart:1809:7 • avoid_print
+warning • Unused import: 'package:donapos_mobile/db_helper.dart' • lib/controllers/pos_cart_controller.dart:3:8 • unused_import
+   info • Statements in a for should be enclosed in a block • lib/controllers/pos_cart_controller.dart:206:36 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/controllers/pos_cart_controller.dart:225:42 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/controllers/pos_cart_controller.dart:226:24 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/controllers/pos_cart_controller.dart:234:77 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/controllers/pos_cart_controller.dart:235:25 • curly_braces_in_flow_control_structures
+warning • Unused import: 'package:flutter/material.dart' • lib/controllers/pos_transaction_controller.dart:1:8 • unused_import
+warning • Unused import: 'package:shared_preferences/shared_preferences.dart' • lib/controllers/pos_transaction_controller.dart:4:8 • unused_import
+   info • Don't invoke 'print' in production code • lib/db_helper.dart:62:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/db_helper.dart:69:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/db_helper.dart:91:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/db_helper.dart:98:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/db_helper.dart:123:9 • avoid_print
+   info • Empty catch block • lib/db_helper.dart:129:19 • empty_catches
+   info • Don't invoke 'print' in production code • lib/db_helper.dart:150:9 • avoid_print
+   info • Empty catch block • lib/db_helper.dart:221:19 • empty_catches
+   info • Don't invoke 'print' in production code • lib/db_helper.dart:247:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/db_helper.dart:254:10 • avoid_print
+   info • Don't invoke 'print' in production code • lib/db_helper.dart:261:10 • avoid_print
+   info • Don't invoke 'print' in production code • lib/db_helper.dart:288:9 • avoid_print
+  error • Undefined class 'PosTransaction' • lib/db_helper.dart:351:34 • undefined_class
+warning • The value of the local variable 'textNullable' isn't used • lib/db_helper.dart:509:11 • unused_local_variable
+   info • Don't invoke 'print' in production code • lib/db_helper.dart:823:11 • avoid_print
+   info • Statements in an if should be enclosed in a block • lib/db_helper.dart:1347:42 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/db_helper.dart:1348:47 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/db_helper.dart:1349:50 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/db_helper.dart:1350:47 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/db_helper.dart:1351:12 • curly_braces_in_flow_control_structures
+warning • The value of the local variable 'maxDate' isn't used • lib/db_helper.dart:1422:12 • unused_local_variable
+   info • Statements in an if should be enclosed in a block • lib/db_helper.dart:1452:42 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/db_helper.dart:1453:47 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/db_helper.dart:1454:50 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/db_helper.dart:1455:47 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/db_helper.dart:1456:12 • curly_braces_in_flow_control_structures
+   info • Use 'const' with the constructor to improve performance • lib/design_system.dart:66:20 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/design_system.dart:85:18 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/design_system.dart:88:16 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/design_system.dart:90:20 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/design_system.dart:93:16 • prefer_const_constructors
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/design_system.dart:134:49 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/design_system.dart:202:61 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/design_system.dart:203:67 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/design_system.dart:242:28 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/design_system.dart:243:31 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/design_system.dart:276:25 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/design_system.dart:370:52 • deprecated_member_use
+   info • The import of 'package:flutter/material.dart' is unnecessary because all of the used elements are also provided by the import of 'package:donapos_mobile/design_system.dart' • lib/main.dart:1:8 • unnecessary_import
+warning • The value of the local variable 'apiService' isn't used • lib/providers/pos_provider.dart:66:15 • unused_local_variable
+   info • Don't invoke 'print' in production code • lib/providers/pos_provider.dart:100:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/providers/pos_provider.dart:142:11 • avoid_print
+   info • Statements in an if should be enclosed in a block • lib/providers/pos_provider.dart:169:33 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/providers/pos_provider.dart:170:20 • curly_braces_in_flow_control_structures
+   info • The import of 'package:flutter/material.dart' is unnecessary because all of the used elements are also provided by the import of 'package:donapos_mobile/design_system.dart' • lib/screens/about_screen.dart:1:8 • unnecessary_import
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/about_screen.dart:54:56 • deprecated_member_use
+   info • Unnecessary use of 'toList' in a spread • lib/screens/about_screen.dart:90:14 • unnecessary_to_list_in_spreads
+   info • The import of 'package:flutter/material.dart' is unnecessary because all of the used elements are also provided by the import of 'package:donapos_mobile/design_system.dart' • lib/screens/admin/customer_display_settings_screen.dart:1:8 • unnecessary_import
+   info • The 'if' statement could be replaced by a null-aware assignment • lib/screens/admin/customer_display_settings_screen.dart:42:5 • prefer_conditional_assignment
+   info • Don't invoke 'print' in production code • lib/screens/admin/customer_display_settings_screen.dart:108:7 • avoid_print
+   info • 'activeColor' is deprecated and shouldn't be used. Use activeThumbColor instead. This feature was deprecated after v3.31.0-2.0.pre • lib/screens/admin/customer_display_settings_screen.dart:156:61 • deprecated_member_use
+   info • Use 'const' with the constructor to improve performance • lib/screens/admin/customer_display_settings_screen.dart:162:19 • prefer_const_constructors
+   info • The import of 'package:flutter/material.dart' is unnecessary because all of the used elements are also provided by the import of 'package:donapos_mobile/design_system.dart' • lib/screens/admin/invoice_settings_dialog.dart:3:8 • unnecessary_import
+warning • Unused import: 'package:donapos_mobile/widgets/logo_debug_dialog.dart' • lib/screens/admin/invoice_settings_dialog.dart:11:8 • unused_import
+warning • Unused import: 'package:image_cropper/image_cropper.dart' • lib/screens/admin/invoice_settings_dialog.dart:13:8 • unused_import
+   info • Don't use 'BuildContext's across async gaps • lib/screens/admin/invoice_settings_dialog.dart:134:21 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/screens/admin/invoice_settings_dialog.dart:135:20 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/screens/admin/invoice_settings_dialog.dart:144:20 • use_build_context_synchronously
+   info • Don't invoke 'print' in production code • lib/screens/admin/invoice_settings_dialog.dart:155:13 • avoid_print
+   info • Don't invoke 'print' in production code • lib/screens/admin/invoice_settings_dialog.dart:162:17 • avoid_print
+   info • Unnecessary braces in a string interpolation • lib/screens/admin/invoice_settings_dialog.dart:196:40 • unnecessary_brace_in_string_interps
+   info • Don't use 'BuildContext's across async gaps • lib/screens/admin/invoice_settings_dialog.dart:204:22 • use_build_context_synchronously
+warning • The value of the local variable 'isLandscape' isn't used • lib/screens/admin/invoice_settings_dialog.dart:210:11 • unused_local_variable
+   info • 'activeColor' is deprecated and shouldn't be used. Use activeThumbColor instead. This feature was deprecated after v3.31.0-2.0.pre • lib/screens/admin/invoice_settings_dialog.dart:271:28 • deprecated_member_use
+   info • 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre • lib/screens/admin/invoice_settings_dialog.dart:282:32 • deprecated_member_use
+   info • 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre • lib/screens/admin/invoice_settings_dialog.dart:283:32 • deprecated_member_use
+   info • 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre • lib/screens/admin/invoice_settings_dialog.dart:291:32 • deprecated_member_use
+   info • 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre • lib/screens/admin/invoice_settings_dialog.dart:292:32 • deprecated_member_use
+   info • 'activeColor' is deprecated and shouldn't be used. Use activeThumbColor instead. This feature was deprecated after v3.31.0-2.0.pre • lib/screens/admin/invoice_settings_dialog.dart:304:29 • deprecated_member_use
+   info • Use interpolation to compose strings and values • lib/screens/admin/invoice_settings_dialog.dart:378:48 • prefer_interpolation_to_compose_strings
+   info • The import of 'package:flutter/material.dart' is unnecessary because all of the used elements are also provided by the import of 'package:donapos_mobile/design_system.dart' • lib/screens/admin/local_data_check_dialog.dart:1:8 • unnecessary_import
+warning • The value of the field '_hasSearched' isn't used • lib/screens/admin/local_data_check_dialog.dart:19:8 • unused_field
+   info • Don't invoke 'print' in production code • lib/screens/admin/local_data_check_dialog.dart:30:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/screens/admin/local_data_check_dialog.dart:40:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/screens/admin/local_data_check_dialog.dart:43:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/screens/admin/local_data_check_dialog.dart:49:14 • avoid_print
+   info • Don't invoke 'print' in production code • lib/screens/admin/local_data_check_dialog.dart:54:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/screens/admin/local_data_check_dialog.dart:63:7 • avoid_print
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/admin/local_data_check_dialog.dart:242:76 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/admin/local_data_check_dialog.dart:242:106 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/admin/local_data_check_dialog.dart:279:24 • deprecated_member_use
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/admin/local_data_check_dialog.dart:382:51 • use_build_context_synchronously
+   info • The import of 'package:flutter/material.dart' is unnecessary because all of the used elements are also provided by the import of 'package:donapos_mobile/design_system.dart' • lib/screens/admin/sd_card_backup_screen.dart:5:8 • unnecessary_import
+warning • Unused import: 'package:donapos_mobile/language_provider.dart' • lib/screens/admin/sd_card_backup_screen.dart:10:8 • unused_import
+warning • Unused import: 'package:provider/provider.dart' • lib/screens/admin/sd_card_backup_screen.dart:11:8 • unused_import
+   info • The private field _currentPath could be 'final' • lib/screens/admin/sd_card_backup_screen.dart:25:10 • prefer_final_fields
+   info • Don't use 'BuildContext's across async gaps • lib/screens/admin/sd_card_backup_screen.dart:133:26 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/screens/admin/sd_card_backup_screen.dart:173:26 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/screens/admin/sd_card_backup_screen.dart:207:20 • use_build_context_synchronously
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/admin/sd_card_backup_screen.dart:249:45 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/admin/sd_card_backup_screen.dart:280:51 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/admin/sd_card_backup_screen.dart:342:62 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/admin/sd_card_backup_screen.dart:385:51 • deprecated_member_use
+   info • The import of 'package:flutter/material.dart' is unnecessary because all of the used elements are also provided by the import of 'package:donapos_mobile/design_system.dart' • lib/screens/admin_dashboard.dart:1:8 • unnecessary_import
+warning • Unused import: 'package:donapos_mobile/widgets/glass_dialog.dart' • lib/screens/admin_dashboard.dart:6:8 • unused_import
+warning • Unused import: 'package:donapos_mobile/widgets/customer_manager_dialog.dart' • lib/screens/admin_dashboard.dart:12:8 • unused_import
+warning • Unused import: 'package:donapos_mobile/widgets/sync_progress_dialog.dart' • lib/screens/admin_dashboard.dart:22:8 • unused_import
+warning • The value of the field '_priceGroups' isn't used • lib/screens/admin_dashboard.dart:41:30 • unused_field
+warning • The value of the local variable 'pgConfig' isn't used • lib/screens/admin_dashboard.dart:71:11 • unused_local_variable
+warning • The declaration '_syncGroups' isn't referenced • lib/screens/admin_dashboard.dart:120:16 • unused_element
+   info • Don't use 'BuildContext's across async gaps • lib/screens/admin_dashboard.dart:125:18 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/screens/admin_dashboard.dart:171:34 • use_build_context_synchronously
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/admin_dashboard.dart:214:80 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/admin_dashboard.dart:215:96 • deprecated_member_use
+   info • Use 'const' with the constructor to improve performance • lib/screens/admin_dashboard.dart:440:19 • prefer_const_constructors
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • lib/screens/admin_dashboard.dart:442:31 • prefer_const_literals_to_create_immutables
+   info • Unnecessary use of 'toList' in a spread • lib/screens/admin_dashboard.dart:471:18 • unnecessary_to_list_in_spreads
+   info • Use 'const' with the constructor to improve performance • lib/screens/admin_dashboard.dart:526:24 • prefer_const_constructors
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • lib/screens/admin_dashboard.dart:526:87 • prefer_const_literals_to_create_immutables
+   info • Use 'const' with the constructor to improve performance • lib/screens/admin_dashboard.dart:527:27 • prefer_const_constructors
+   info • 'activeColor' is deprecated and shouldn't be used. Use activeThumbColor instead. This feature was deprecated after v3.31.0-2.0.pre • lib/screens/admin_dashboard.dart:530:57 • deprecated_member_use
+   info • 'activeColor' is deprecated and shouldn't be used. Use activeThumbColor instead. This feature was deprecated after v3.31.0-2.0.pre • lib/screens/admin_dashboard.dart:543:55 • deprecated_member_use
+   info • 'activeColor' is deprecated and shouldn't be used. Use activeThumbColor instead. This feature was deprecated after v3.31.0-2.0.pre • lib/screens/admin_dashboard.dart:554:50 • deprecated_member_use
+   info • 'activeColor' is deprecated and shouldn't be used. Use activeThumbColor instead. This feature was deprecated after v3.31.0-2.0.pre • lib/screens/admin_dashboard.dart:565:55 • deprecated_member_use
+   info • 'activeColor' is deprecated and shouldn't be used. Use activeThumbColor instead. This feature was deprecated after v3.31.0-2.0.pre • lib/screens/admin_dashboard.dart:576:61 • deprecated_member_use
+   info • Use 'const' with the constructor to improve performance • lib/screens/admin_dashboard.dart:582:19 • prefer_const_constructors
+   info • 'activeColor' is deprecated and shouldn't be used. Use activeThumbColor instead. This feature was deprecated after v3.31.0-2.0.pre • lib/screens/admin_dashboard.dart:627:30 • deprecated_member_use
+warning • The declaration '_buildFlatDropdown' isn't referenced • lib/screens/admin_dashboard.dart:632:10 • unused_element
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/admin_dashboard.dart:641:33 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/admin_dashboard.dart:642:52 • deprecated_member_use
+   info • The import of 'package:flutter/material.dart' is unnecessary because all of the used elements are also provided by the import of 'package:donapos_mobile/design_system.dart' • lib/screens/config_screen.dart:2:8 • unnecessary_import
+   info • Don't use 'BuildContext's across async gaps • lib/screens/config_screen.dart:84:9 • use_build_context_synchronously
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/config_screen.dart:112:41 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/config_screen.dart:219:33 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/config_screen.dart:331:48 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/config_screen.dart:364:123 • deprecated_member_use
+   info • The import of 'package:flutter/material.dart' is unnecessary because all of the used elements are also provided by the import of 'package:donapos_mobile/design_system.dart' • lib/screens/customer_display_screen.dart:1:8 • unnecessary_import
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/customer_display_screen.dart:72:33 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/customer_display_screen.dart:248:47 • deprecated_member_use
+   info • The import of 'package:flutter/material.dart' is unnecessary because all of the used elements are also provided by the import of 'package:donapos_mobile/design_system.dart' • lib/screens/login_screen.dart:1:8 • unnecessary_import
+   info • Don't use 'BuildContext's across async gaps • lib/screens/login_screen.dart:148:39 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/screens/login_screen.dart:161:34 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/screens/login_screen.dart:174:39 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/screens/login_screen.dart:179:39 • use_build_context_synchronously
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/login_screen.dart:200:29 • deprecated_member_use
+   info • Use 'const' with the constructor to improve performance • lib/screens/login_screen.dart:301:19 • prefer_const_constructors
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/login_screen.dart:333:61 • deprecated_member_use
+   info • Use a 'SizedBox' to add whitespace to a layout • lib/screens/login_screen.dart:392:30 • sized_box_for_whitespace
+   info • Use 'const' with the constructor to improve performance • lib/screens/login_screen.dart:421:29 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/screens/login_screen.dart:422:29 • prefer_const_constructors
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/login_screen.dart:460:75 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/login_screen.dart:703:71 • deprecated_member_use
+   info • Use a 'SizedBox' to add whitespace to a layout • lib/screens/login_screen.dart:715:34 • sized_box_for_whitespace
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/login_screen.dart:742:102 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/login_screen.dart:746:86 • deprecated_member_use
+warning • A value for optional parameter 'color' isn't ever given • lib/screens/login_screen.dart:796:64 • unused_element_parameter
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/login_screen.dart:811:37 • deprecated_member_use
+   info • The import of 'package:flutter/material.dart' is unnecessary because all of the used elements are also provided by the import of 'package:donapos_mobile/design_system.dart' • lib/screens/pos/components/pos_app_bar.dart:1:8 • unnecessary_import
+   info • The import of 'dart:ui' is unnecessary because all of the used elements are also provided by the import of 'package:flutter/material.dart' • lib/screens/pos/components/pos_app_bar.dart:7:8 • unnecessary_import
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/pos/components/pos_app_bar.dart:107:65 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/pos/components/pos_app_bar.dart:150:51 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/pos/components/pos_app_bar.dart:256:44 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/pos/components/pos_app_bar.dart:256:81 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/pos/components/pos_app_bar.dart:265:44 • deprecated_member_use
+   info • The import of 'package:flutter/material.dart' is unnecessary because all of the used elements are also provided by the import of 'package:donapos_mobile/design_system.dart' • lib/screens/pos/components/pos_cart_panel.dart:1:8 • unnecessary_import
+warning • Unused import: 'package:donapos_mobile/utils_ui.dart' • lib/screens/pos/components/pos_cart_panel.dart:6:8 • unused_import
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/pos/components/pos_cart_panel.dart:50:31 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/pos/components/pos_cart_panel.dart:66:57 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/pos/components/pos_cart_panel.dart:80:51 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/pos/components/pos_cart_panel.dart:109:72 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/pos/components/pos_cart_panel.dart:121:66 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/pos/components/pos_cart_panel.dart:153:62 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/pos/components/pos_cart_panel.dart:175:40 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/pos/components/pos_cart_panel.dart:239:48 • deprecated_member_use
+   info • The import of 'package:flutter/material.dart' is unnecessary because all of the used elements are also provided by the import of 'package:donapos_mobile/design_system.dart' • lib/screens/pos/components/pos_category_sidebar.dart:1:8 • unnecessary_import
+   info • The import of 'package:flutter/material.dart' is unnecessary because all of the used elements are also provided by the import of 'package:donapos_mobile/design_system.dart' • lib/screens/pos/components/pos_held_orders_dialog.dart:1:8 • unnecessary_import
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/pos/components/pos_held_orders_dialog.dart:31:71 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/pos/components/pos_menu_dialog.dart:61:24 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/pos/components/pos_menu_dialog.dart:62:43 • deprecated_member_use
+   info • The import of 'package:flutter/material.dart' is unnecessary because all of the used elements are also provided by the import of 'package:donapos_mobile/design_system.dart' • lib/screens/pos/components/pos_modifier_dialog.dart:1:8 • unnecessary_import
+   info • Parameter 'key' could be a super parameter • lib/screens/pos/components/pos_modifier_dialog.dart:15:9 • use_super_parameters
+   info • Invalid use of a private type in a public API • lib/screens/pos/components/pos_modifier_dialog.dart:23:3 • library_private_types_in_public_api
+   info • Don't use 'BuildContext's across async gaps • lib/screens/pos/components/pos_modifier_dialog.dart:78:14 • use_build_context_synchronously
+   info • Unnecessary use of 'toList' in a spread • lib/screens/pos/components/pos_modifier_dialog.dart:177:30 • unnecessary_to_list_in_spreads
+   info • Use 'const' with the constructor to improve performance • lib/screens/pos/components/pos_modifier_dialog.dart:185:41 • prefer_const_constructors
+   info • The import of 'package:flutter/material.dart' is unnecessary because all of the used elements are also provided by the import of 'package:donapos_mobile/design_system.dart' • lib/screens/pos/components/pos_payment_dialog.dart:1:8 • unnecessary_import
+warning • Unused import: 'dart:async' • lib/screens/pos/components/pos_payment_dialog.dart:7:8 • unused_import
+warning • Unused import: 'package:donapos_mobile/controllers/pos_cart_controller.dart' • lib/screens/pos/components/pos_payment_dialog.dart:10:8 • unused_import
+warning • The value of the field '_allMethodsFetched' isn't used • lib/screens/pos/components/pos_payment_dialog.dart:38:8 • unused_field
+   info • The private field _addedPayments could be 'final' • lib/screens/pos/components/pos_payment_dialog.dart:42:30 • prefer_final_fields
+warning • The value of the local variable 'lp' isn't used • lib/screens/pos/components/pos_payment_dialog.dart:317:11 • unused_local_variable
+   info • Use 'const' with the constructor to improve performance • lib/screens/pos/components/pos_payment_dialog.dart:329:25 • prefer_const_constructors
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/pos/components/pos_payment_dialog.dart:346:76 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/pos/components/pos_payment_dialog.dart:423:101 • deprecated_member_use
+   info • Use a 'SizedBox' to add whitespace to a layout • lib/screens/pos/components/pos_payment_dialog.dart:485:33 • sized_box_for_whitespace
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/pos/components/pos_payment_dialog.dart:511:93 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/pos/components/pos_payment_dialog.dart:512:112 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/pos/components/pos_payment_dialog.dart:707:73 • deprecated_member_use
+   info • The import of 'package:flutter/material.dart' is unnecessary because all of the used elements are also provided by the import of 'package:donapos_mobile/design_system.dart' • lib/screens/pos/components/pos_product_grid.dart:1:8 • unnecessary_import
+   info • The private field _isAutoScrolling could be 'final' • lib/screens/pos/components/pos_product_grid.dart:45:8 • prefer_final_fields
+warning • The value of the field '_isAutoScrolling' isn't used • lib/screens/pos/components/pos_product_grid.dart:45:8 • unused_field
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/pos/components/pos_product_grid.dart:204:48 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/pos/components/pos_product_grid.dart:211:43 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/pos/components/pos_product_grid.dart:391:40 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/pos/components/pos_product_grid.dart:392:40 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/pos/components/pos_product_grid.dart:393:40 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/pos/components/pos_product_grid.dart:451:56 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/pos/components/pos_product_grid.dart:482:58 • deprecated_member_use
+   info • The import of 'package:flutter/material.dart' is unnecessary because all of the used elements are also provided by the import of 'package:donapos_mobile/design_system.dart' • lib/screens/pos/components/pos_receipt_dialog.dart:2:8 • unnecessary_import
+   info • Unnecessary use of 'toList' in a spread • lib/screens/pos/components/pos_receipt_dialog.dart:194:22 • unnecessary_to_list_in_spreads
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/pos/components/pos_receipt_dialog.dart:244:39 • deprecated_member_use
+   info • Use 'const' with the constructor to improve performance • lib/screens/pos/components/pos_receipt_dialog.dart:273:26 • prefer_const_constructors
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/pos/components/pos_receipt_dialog.dart:321:56 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/pos/components/pos_receipt_dialog.dart:374:64 • deprecated_member_use
+   info • Use 'const' with the constructor to improve performance • lib/screens/pos/components/pos_receipt_dialog.dart:376:32 • prefer_const_constructors
+   info • The import of 'package:flutter/material.dart' is unnecessary because all of the used elements are also provided by the import of 'package:donapos_mobile/design_system.dart' • lib/screens/pos/components/pos_scan_bar.dart:2:8 • unnecessary_import
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/pos/components/pos_scan_bar.dart:46:69 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/pos/components/pos_scan_bar.dart:48:49 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/pos/components/pos_scan_bar.dart:57:54 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/pos/components/pos_scan_bar.dart:102:78 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/pos/components/pos_scan_bar.dart:106:78 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/pos/components/pos_scan_bar.dart:136:45 • deprecated_member_use
+   info • The import of 'package:flutter/material.dart' is unnecessary because all of the used elements are also provided by the import of 'package:donapos_mobile/design_system.dart' • lib/screens/pos/components/pos_table_selector.dart:1:8 • unnecessary_import
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/pos/components/pos_table_selector.dart:56:66 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/pos/components/pos_table_selector.dart:57:85 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/pos/components/pos_table_selector.dart:77:60 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/pos/components/pos_table_selector.dart:78:79 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/pos/components/pos_table_selector.dart:104:87 • deprecated_member_use
+   info • The import of 'package:flutter/material.dart' is unnecessary because all of the used elements are also provided by the import of 'package:donapos_mobile/design_system.dart' • lib/screens/pos/components/table_pax_dialog.dart:1:8 • unnecessary_import
+warning • Unused import: 'package:donapos_mobile/utils_ui.dart' • lib/screens/pos/components/table_pax_dialog.dart:6:8 • unused_import
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/pos/components/table_pax_dialog.dart:74:42 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/pos/components/table_pax_dialog.dart:152:41 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/pos/components/table_pax_dialog.dart:155:42 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/pos/components/table_pax_dialog.dart:166:66 • deprecated_member_use
+   info • The import of 'package:flutter/material.dart' is unnecessary because all of the used elements are also provided by the import of 'package:donapos_mobile/design_system.dart' • lib/screens/pos/components/topping_price_dialog.dart:1:8 • unnecessary_import
+   info • Parameter 'key' could be a super parameter • lib/screens/pos/components/topping_price_dialog.dart:10:9 • use_super_parameters
+   info • Invalid use of a private type in a public API • lib/screens/pos/components/topping_price_dialog.dart:17:3 • library_private_types_in_public_api
+   info • The import of 'package:flutter/material.dart' is unnecessary because all of the used elements are also provided by the import of '../../design_system.dart' • lib/screens/pos/local_discount_approval_dialog.dart:1:8 • unnecessary_import
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/pos/local_discount_approval_dialog.dart:99:86 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/pos/local_discount_approval_dialog.dart:99:118 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/pos/local_discount_approval_dialog.dart:100:71 • deprecated_member_use
+   info • The import of 'package:flutter/material.dart' is unnecessary because all of the used elements are also provided by the import of '../../design_system.dart' • lib/screens/pos/local_discount_dialog.dart:1:8 • unnecessary_import
+   info • Don't use 'BuildContext's across async gaps • lib/screens/pos/local_discount_dialog.dart:104:26 • use_build_context_synchronously
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/pos/local_discount_dialog.dart:147:67 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/pos/local_discount_dialog.dart:175:83 • deprecated_member_use
+   info • Use 'const' with the constructor to improve performance • lib/screens/pos/local_discount_dialog.dart:177:23 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/screens/pos/local_discount_dialog.dart:177:61 • prefer_const_constructors
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/pos/local_discount_dialog.dart:195:77 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/pos/local_discount_dialog.dart:196:103 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/pos/local_discount_dialog.dart:197:84 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/pos/local_discount_dialog.dart:305:82 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/pos/local_discount_dialog.dart:313:55 • deprecated_member_use
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre • lib/screens/pos/local_discount_dialog.dart:359:13 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/pos/local_discount_dialog.dart:388:64 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/pos/local_discount_dialog.dart:402:64 • deprecated_member_use
+   info • 'activeColor' is deprecated and shouldn't be used. Use activeThumbColor instead. This feature was deprecated after v3.31.0-2.0.pre • lib/screens/pos/local_discount_dialog.dart:436:35 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/pos/local_discount_dialog.dart:480:37 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/pos/local_discount_dialog.dart:513:90 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/pos/local_discount_dialog.dart:538:52 • deprecated_member_use
+   info • Don't use 'BuildContext's across async gaps • lib/screens/pos/local_discount_dialog.dart:552:42 • use_build_context_synchronously
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/pos/local_discount_dialog.dart:562:50 • deprecated_member_use
+warning • Unused import: 'dart:io' • lib/screens/pos_screen.dart:2:8 • unused_import
+   info • The import of 'package:flutter/material.dart' is unnecessary because all of the used elements are also provided by the import of 'package:donapos_mobile/design_system.dart' • lib/screens/pos_screen.dart:3:8 • unnecessary_import
+warning • Unused import: 'package:esc_pos_utils_plus/esc_pos_utils_plus.dart' • lib/screens/pos_screen.dart:15:8 • unused_import
+warning • Unused import: 'package:donapos_mobile/language_provider.dart' • lib/screens/pos_screen.dart:23:8 • unused_import
+warning • Unused import: 'package:donapos_mobile/widgets/initial_cash_dialog.dart' • lib/screens/pos_screen.dart:58:8 • unused_import
+   info • The private field _syncStatus could be 'final' • lib/screens/pos_screen.dart:96:10 • prefer_final_fields
+warning • The value of the field '_kotEnabled' isn't used • lib/screens/pos_screen.dart:129:8 • unused_field
+warning • The value of the field '_kotType' isn't used • lib/screens/pos_screen.dart:130:10 • unused_field
+warning • The value of the field '_kotAddress' isn't used • lib/screens/pos_screen.dart:131:10 • unused_field
+   info • Don't use 'BuildContext's across async gaps • lib/screens/pos_screen.dart:202:35 • use_build_context_synchronously
+   info • Don't invoke 'print' in production code • lib/screens/pos_screen.dart:257:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/screens/pos_screen.dart:341:13 • avoid_print
+   info • Don't invoke 'print' in production code • lib/screens/pos_screen.dart:618:5 • avoid_print
+  error • The getter 'manualDiscount' isn't defined for the type 'PosCartController' • lib/screens/pos_screen.dart:648:45 • undefined_getter
+   info • Don't invoke 'print' in production code • lib/screens/pos_screen.dart:660:9 • avoid_print
+   info • Use 'const' for final variables initialized to a constant value • lib/screens/pos_screen.dart:728:7 • prefer_const_declarations
+   info • Don't use 'BuildContext's across async gaps • lib/screens/pos_screen.dart:820:28 • use_build_context_synchronously
+  error • The getter 'manualDiscount' isn't defined for the type 'PosCartController' • lib/screens/pos_screen.dart:875:47 • undefined_getter
+   info • Don't use 'BuildContext's across async gaps • lib/screens/pos_screen.dart:879:32 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/screens/pos_screen.dart:884:24 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/screens/pos_screen.dart:1044:11 • use_build_context_synchronously
+   info • Unnecessary use of 'toList' in a spread • lib/screens/pos_screen.dart:1076:31 • unnecessary_to_list_in_spreads
+   info • Use 'const' with the constructor to improve performance • lib/screens/pos_screen.dart:1132:26 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/screens/pos_screen.dart:1132:44 • prefer_const_constructors
+   info • Statements in an if should be enclosed in a block • lib/screens/pos_screen.dart:1143:28 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/screens/pos_screen.dart:1144:16 • curly_braces_in_flow_control_structures
+   info • Use 'const' with the constructor to improve performance • lib/screens/pos_screen.dart:1172:73 • prefer_const_constructors
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/pos_screen.dart:1267:124 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/pos_screen.dart:1276:75 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/pos_screen.dart:1335:78 • deprecated_member_use
+   info • Don't invoke 'print' in production code • lib/screens/pos_screen.dart:1354:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/screens/pos_screen.dart:1366:15 • avoid_print
+   info • Don't use 'BuildContext's across async gaps • lib/screens/pos_screen.dart:1392:24 • use_build_context_synchronously
+warning • The value of the local variable 'prefs' isn't used • lib/screens/pos_screen.dart:1401:11 • unused_local_variable
+   info • Don't use 'BuildContext's across async gaps • lib/screens/pos_screen.dart:1456:26 • use_build_context_synchronously
+   info • Unnecessary use of string interpolation • lib/screens/pos_screen.dart:1496:38 • unnecessary_string_interpolations
+warning • The value of the local variable 't' isn't used • lib/screens/pos_screen.dart:1520:23 • unused_local_variable
+   info • Statements in a for should be enclosed in a block • lib/screens/pos_screen.dart:1546:38 • curly_braces_in_flow_control_structures
+   info • 'WillPopScope' is deprecated and shouldn't be used. Use PopScope instead. The Android predictive back feature will not work with WillPopScope. This feature was deprecated after v3.12.0-1.0.pre • lib/screens/pos_screen.dart:1606:33 • deprecated_member_use
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • lib/screens/pos_screen.dart:1616:38 • prefer_const_literals_to_create_immutables
+   info • Use 'const' with the constructor to improve performance • lib/screens/pos_screen.dart:1616:39 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/screens/pos_screen.dart:1616:96 • prefer_const_constructors
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/pos_screen.dart:1649:53 • use_build_context_synchronously
+   info • The import of 'package:flutter/material.dart' is unnecessary because all of the used elements are also provided by the import of 'package:donapos_mobile/design_system.dart' • lib/screens/report_screen.dart:1:8 • unnecessary_import
+   info • The private field _zReportDate could be 'final' • lib/screens/report_screen.dart:30:12 • prefer_final_fields
+warning • The value of the field '_zReportDate' isn't used • lib/screens/report_screen.dart:30:12 • unused_field
+warning • The value of the field '_connected' isn't used • lib/screens/report_screen.dart:39:8 • unused_field
+   info • Use 'const' with the constructor to improve performance • lib/screens/report_screen.dart:105:18 • prefer_const_constructors
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • lib/screens/report_screen.dart:105:83 • prefer_const_literals_to_create_immutables
+   info • Use 'const' with the constructor to improve performance • lib/screens/report_screen.dart:107:14 • prefer_const_constructors
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/report_screen.dart:248:41 • deprecated_member_use
+warning • The value of the local variable 'isLandscape' isn't used • lib/screens/report_screen.dart:403:11 • unused_local_variable
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/report_screen.dart:476:43 • deprecated_member_use
+   info • 'dialogBackgroundColor' is deprecated and shouldn't be used. Use DialogThemeData.backgroundColor instead. This feature was deprecated after v3.27.0-0.1.pre • lib/screens/report_screen.dart:627:20 • deprecated_member_use
+   info • Use 'const' with the constructor to improve performance • lib/screens/report_screen.dart:659:14 • prefer_const_constructors
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • lib/screens/report_screen.dart:660:27 • prefer_const_literals_to_create_immutables
+   info • Use 'const' with the constructor to improve performance • lib/screens/report_screen.dart:661:21 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/screens/report_screen.dart:661:46 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/screens/report_screen.dart:661:66 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/screens/report_screen.dart:662:21 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/screens/report_screen.dart:662:46 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/screens/report_screen.dart:662:94 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/screens/report_screen.dart:663:21 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/screens/report_screen.dart:663:46 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/screens/report_screen.dart:663:93 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/screens/report_screen.dart:664:21 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/screens/report_screen.dart:664:46 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/screens/report_screen.dart:664:95 • prefer_const_constructors
+   info • Unnecessary use of 'toList' in a spread • lib/screens/report_screen.dart:685:17 • unnecessary_to_list_in_spreads
+   info • 'dialogBackgroundColor' is deprecated and shouldn't be used. Use DialogThemeData.backgroundColor instead. This feature was deprecated after v3.27.0-0.1.pre • lib/screens/report_screen.dart:728:32 • deprecated_member_use
+   info • 'dialogBackgroundColor' is deprecated and shouldn't be used. Use DialogThemeData.backgroundColor instead. This feature was deprecated after v3.27.0-0.1.pre • lib/screens/report_screen.dart:764:32 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/report_screen.dart:802:38 • deprecated_member_use
+   info • Use 'const' with the constructor to improve performance • lib/screens/report_screen.dart:819:14 • prefer_const_constructors
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • lib/screens/report_screen.dart:820:27 • prefer_const_literals_to_create_immutables
+   info • Unnecessary use of string interpolation • lib/screens/report_screen.dart:839:59 • unnecessary_string_interpolations
+   info • Unnecessary use of 'toList' in a spread • lib/screens/report_screen.dart:843:35 • unnecessary_to_list_in_spreads
+   info • The import of 'package:flutter/material.dart' is unnecessary because all of the used elements are also provided by the import of 'package:donapos_mobile/design_system.dart' • lib/screens/sales_graph_screen.dart:1:8 • unnecessary_import
+warning • Unused import: 'package:donapos_mobile/widgets/glass_dialog.dart' • lib/screens/sales_graph_screen.dart:6:8 • unused_import
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/sales_graph_screen.dart:76:54 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/sales_graph_screen.dart:119:38 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/sales_graph_screen.dart:121:57 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/sales_graph_screen.dart:280:41 • deprecated_member_use
+   info • The import of 'package:flutter/material.dart' is unnecessary because all of the used elements are also provided by the import of 'package:donapos_mobile/design_system.dart' • lib/screens/splash_screen.dart:6:8 • unnecessary_import
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/splash_screen.dart:131:47 • deprecated_member_use
+   info • Use 'const' with the constructor to improve performance • lib/screens/splash_screen.dart:169:30 • prefer_const_constructors
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/splash_screen.dart:200:57 • deprecated_member_use
+   info • Don't invoke 'print' in production code • lib/sync_service.dart:9:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/sync_service.dart:15:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/sync_service.dart:17:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/sync_service.dart:19:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/sync_service.dart:47:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/sync_service.dart:53:7 • avoid_print
+   info • 'isInDebugMode' is deprecated and shouldn't be used. Use WorkmanagerDebug handlers instead. This parameter has no effect • lib/sync_service.dart:62:9 • deprecated_member_use
+   info • Don't invoke 'print' in production code • lib/sync_service.dart:78:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/sync_service.dart:80:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/sync_service.dart:87:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/utils_backup.dart:68:7 • avoid_print
+   info • Don't use 'BuildContext's across async gaps • lib/utils_backup.dart:199:26 • use_build_context_synchronously
+   info • Don't invoke 'print' in production code • lib/utils_print.dart:52:7 • avoid_print
+   info • Uses 'await' on an instance of 'String', which is not a subtype of 'Future' • lib/utils_print.dart:71:25 • await_only_futures
+   info • Don't invoke 'print' in production code • lib/utils_print.dart:77:7 • avoid_print
+   info • Statements in an if should be enclosed in a block • lib/utils_printer.dart:12:21 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/utils_printer.dart:13:26 • curly_braces_in_flow_control_structures
+warning • Unused import: 'package:url_launcher/url_launcher.dart' • lib/utils_ui.dart:2:8 • unused_import
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/utils_ui.dart:84:86 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/utils_ui.dart:85:105 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/utils_ui.dart:281:33 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/utils_ui.dart:285:37 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/utils_ui.dart:290:52 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/utils_ui.dart:311:46 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/utils_ui.dart:321:56 • deprecated_member_use
+   info • The import of 'package:flutter/material.dart' is unnecessary because all of the used elements are also provided by the import of 'package:donapos_mobile/design_system.dart' • lib/widgets/attendance_dialog.dart:2:8 • unnecessary_import
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/attendance_dialog.dart:54:72 • deprecated_member_use
+warning • The value of the local variable 'id' isn't used • lib/widgets/attendance_dialog.dart:82:11 • unused_local_variable
+   info • Don't use 'BuildContext's across async gaps • lib/widgets/attendance_dialog.dart:113:22 • use_build_context_synchronously
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/attendance_dialog.dart:203:41 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/attendance_dialog.dart:277:107 • deprecated_member_use
+   info • The import of 'package:flutter/material.dart' is unnecessary because all of the used elements are also provided by the import of 'package:donapos_mobile/design_system.dart' • lib/widgets/calculator_dialog.dart:1:8 • unnecessary_import
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/calculator_dialog.dart:141:35 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/calculator_dialog.dart:218:52 • deprecated_member_use
+   info • The import of 'package:flutter/material.dart' is unnecessary because all of the used elements are also provided by the import of 'package:donapos_mobile/design_system.dart' • lib/widgets/customer_manager_dialog.dart:1:8 • unnecessary_import
+warning • Unused import: 'dart:convert' • lib/widgets/customer_manager_dialog.dart:6:8 • unused_import
+warning • The declaration '_prepareEdit' isn't referenced • lib/widgets/customer_manager_dialog.dart:71:8 • unused_element
+   info • Don't invoke 'print' in production code • lib/widgets/customer_manager_dialog.dart:148:11 • avoid_print
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/customer_manager_dialog.dart:230:54 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/customer_manager_dialog.dart:349:112 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/customer_manager_dialog.dart:378:54 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/customer_manager_dialog.dart:378:93 • deprecated_member_use
+   info • The import of 'package:flutter/material.dart' is unnecessary because all of the used elements are also provided by the import of 'package:donapos_mobile/design_system.dart' • lib/widgets/expense_dialog.dart:2:8 • unnecessary_import
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/expense_dialog.dart:119:46 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/expense_dialog.dart:120:65 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/expense_dialog.dart:136:64 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/expense_dialog.dart:168:47 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/glass_dialog.dart:41:50 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/glass_dialog.dart:42:53 • deprecated_member_use
+warning • Unused import: 'package:donapos_mobile/widgets/glass_dialog.dart' • lib/widgets/initial_cash_dialog.dart:1:8 • unused_import
+warning • Unused import: 'package:donapos_mobile/utils_ui.dart' • lib/widgets/initial_cash_dialog.dart:2:8 • unused_import
+   info • The import of 'package:flutter/material.dart' is unnecessary because all of the used elements are also provided by the import of 'package:donapos_mobile/design_system.dart' • lib/widgets/initial_cash_dialog.dart:3:8 • unnecessary_import
+warning • The value of the field '_isLoading' isn't used • lib/widgets/initial_cash_dialog.dart:18:8 • unused_field
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/initial_cash_dialog.dart:153:43 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/initial_cash_dialog.dart:208:39 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/initial_cash_dialog.dart:210:45 • deprecated_member_use
+   info • The import of 'package:flutter/material.dart' is unnecessary because all of the used elements are also provided by the import of 'package:donapos_mobile/design_system.dart' • lib/widgets/kitchen_printer_dialog.dart:1:8 • unnecessary_import
+   info • The private field _isLoading could be 'final' • lib/widgets/kitchen_printer_dialog.dart:28:8 • prefer_final_fields
+warning • The value of the field '_isLoading' isn't used • lib/widgets/kitchen_printer_dialog.dart:28:8 • unused_field
+   info • Don't invoke 'print' in production code • lib/widgets/kitchen_printer_dialog.dart:68:7 • avoid_print
+   info • 'activeColor' is deprecated and shouldn't be used. Use activeThumbColor instead. This feature was deprecated after v3.31.0-2.0.pre • lib/widgets/kitchen_printer_dialog.dart:89:17 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/kitchen_printer_dialog.dart:137:68 • deprecated_member_use
+   info • Unnecessary 'const' keyword • lib/widgets/kitchen_printer_dialog.dart:209:13 • unnecessary_const
+   info • The import of 'package:flutter/material.dart' is unnecessary because all of the used elements are also provided by the import of 'package:donapos_mobile/design_system.dart' • lib/widgets/logo_debug_dialog.dart:1:8 • unnecessary_import
+warning • The value of the field '_rawData' isn't used • lib/widgets/logo_debug_dialog.dart:21:25 • unused_field
+   info • The import of 'package:flutter/material.dart' is unnecessary because all of the used elements are also provided by the import of 'package:donapos_mobile/design_system.dart' • lib/widgets/printer_settings_dialog.dart:1:8 • unnecessary_import
+   info • Don't invoke 'print' in production code • lib/widgets/printer_settings_dialog.dart:54:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/widgets/printer_settings_dialog.dart:69:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/widgets/printer_settings_dialog.dart:82:7 • avoid_print
+   info • Use 'const' for final variables initialized to a constant value • lib/widgets/printer_settings_dialog.dart:91:7 • prefer_const_declarations
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/printer_settings_dialog.dart:130:38 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/printer_settings_dialog.dart:172:87 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/printer_settings_dialog.dart:221:60 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/printer_settings_dialog.dart:221:90 • deprecated_member_use
+   info • The import of 'package:flutter/material.dart' is unnecessary because all of the used elements are also provided by the import of 'package:donapos_mobile/design_system.dart' • lib/widgets/product_manager_dialog.dart:1:8 • unnecessary_import
+   info • Statements in an if should be enclosed in a block • lib/widgets/product_manager_dialog.dart:65:35 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/widgets/product_manager_dialog.dart:66:14 • curly_braces_in_flow_control_structures
+   info • Don't use 'BuildContext's across async gaps • lib/widgets/product_manager_dialog.dart:98:28 • use_build_context_synchronously
+   info • Don't invoke 'print' in production code • lib/widgets/product_manager_dialog.dart:100:7 • avoid_print
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/product_manager_dialog.dart:172:64 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/product_manager_dialog.dart:230:61 • deprecated_member_use
+warning • Unused import: 'package:provider/provider.dart' • lib/widgets/report_dialog.dart:11:8 • unused_import
+warning • Unused import: 'package:donapos_mobile/language_provider.dart' • lib/widgets/report_dialog.dart:12:8 • unused_import
+   info • The import of 'package:flutter/material.dart' is unnecessary because all of the used elements are also provided by the import of 'package:donapos_mobile/design_system.dart' • lib/widgets/report_dialog.dart:13:8 • unnecessary_import
+warning • The value of the field '_connected' isn't used • lib/widgets/report_dialog.dart:42:8 • unused_field
+warning • The value of the local variable 'dateStr' isn't used • lib/widgets/report_dialog.dart:91:14 • unused_local_variable
+   info • Don't invoke 'print' in production code • lib/widgets/report_dialog.dart:97:7 • avoid_print
+warning • The value of the local variable 'dateStr' isn't used • lib/widgets/report_dialog.dart:106:14 • unused_local_variable
+   info • Don't invoke 'print' in production code • lib/widgets/report_dialog.dart:110:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/widgets/report_dialog.dart:123:7 • avoid_print
+warning • The value of the local variable 'dateStr' isn't used • lib/widgets/report_dialog.dart:132:14 • unused_local_variable
+   info • Don't invoke 'print' in production code • lib/widgets/report_dialog.dart:136:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/widgets/report_dialog.dart:149:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/widgets/report_dialog.dart:167:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/widgets/report_dialog.dart:179:7 • avoid_print
+   info • Don't use 'BuildContext's across async gaps • lib/widgets/report_dialog.dart:220:7 • use_build_context_synchronously
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/report_dialog.dart:283:41 • deprecated_member_use
+   info • Don't use 'BuildContext's across async gaps • lib/widgets/report_dialog.dart:306:24 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/widgets/report_dialog.dart:321:12 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/widgets/report_dialog.dart:358:21 • use_build_context_synchronously
+   info • Use 'const' for final variables initialized to a constant value • lib/widgets/report_dialog.dart:367:5 • prefer_const_declarations
+   info • Don't use 'BuildContext's across async gaps • lib/widgets/report_dialog.dart:446:21 • use_build_context_synchronously
+   info • Use 'const' for final variables initialized to a constant value • lib/widgets/report_dialog.dart:454:5 • prefer_const_declarations
+   info • Don't use 'BuildContext's across async gaps • lib/widgets/report_dialog.dart:526:21 • use_build_context_synchronously
+   info • Use 'const' for final variables initialized to a constant value • lib/widgets/report_dialog.dart:531:5 • prefer_const_declarations
+   info • Statements in an if should be enclosed in a block • lib/widgets/report_dialog.dart:567:17 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/widgets/report_dialog.dart:568:12 • curly_braces_in_flow_control_structures
+   info • Don't invoke 'print' in production code • lib/widgets/report_dialog.dart:617:7 • avoid_print
+   info • Don't use 'BuildContext's across async gaps • lib/widgets/report_dialog.dart:625:21 • use_build_context_synchronously
+   info • Use 'const' for final variables initialized to a constant value • lib/widgets/report_dialog.dart:633:5 • prefer_const_declarations
+   info • Don't use 'BuildContext's across async gaps • lib/widgets/report_dialog.dart:703:21 • use_build_context_synchronously
+   info • Use 'const' for final variables initialized to a constant value • lib/widgets/report_dialog.dart:711:5 • prefer_const_declarations
+   info • Statements in an if should be enclosed in a block • lib/widgets/report_dialog.dart:757:29 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/widgets/report_dialog.dart:758:36 • curly_braces_in_flow_control_structures
+   info • Don't use 'BuildContext's across async gaps • lib/widgets/report_dialog.dart:781:21 • use_build_context_synchronously
+   info • Use 'const' for final variables initialized to a constant value • lib/widgets/report_dialog.dart:789:5 • prefer_const_declarations
+   info • Don't use 'BuildContext's across async gaps • lib/widgets/report_dialog.dart:843:21 • use_build_context_synchronously
+   info • Use 'const' for final variables initialized to a constant value • lib/widgets/report_dialog.dart:848:5 • prefer_const_declarations
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/report_dialog.dart:931:33 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/report_dialog.dart:1023:54 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/report_dialog.dart:1156:31 • deprecated_member_use
+   info • Use 'const' with the constructor to improve performance • lib/widgets/report_dialog.dart:1206:25 • prefer_const_constructors
+warning • The value of the local variable 'currency' isn't used • lib/widgets/report_dialog.dart:1312:11 • unused_local_variable
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/report_dialog.dart:1547:27 • deprecated_member_use
+   info • Unnecessary 'const' keyword • lib/widgets/report_dialog.dart:1720:17 • unnecessary_const
+   info • The import of 'package:flutter/material.dart' is unnecessary because all of the used elements are also provided by the import of 'package:donapos_mobile/design_system.dart' • lib/widgets/sales_chart_dialog.dart:1:8 • unnecessary_import
+warning • The value of the field '_isLoading' isn't used • lib/widgets/sales_chart_dialog.dart:20:8 • unused_field
+   info • Use 'const' with the constructor to improve performance • lib/widgets/sales_chart_dialog.dart:198:23 • prefer_const_constructors
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/sales_chart_dialog.dart:222:47 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/sales_chart_dialog.dart:223:50 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/sales_chart_dialog.dart:244:24 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/sales_chart_dialog.dart:253:55 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/sales_chart_dialog.dart:261:144 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/sales_chart_dialog.dart:307:63 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/sales_chart_dialog.dart:333:54 • deprecated_member_use
+   info • Statements in an if should be enclosed in a block • lib/widgets/sales_chart_dialog.dart:358:56 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/widgets/sales_chart_dialog.dart:359:61 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/widgets/sales_chart_dialog.dart:360:61 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/widgets/sales_chart_dialog.dart:427:56 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/widgets/sales_chart_dialog.dart:428:61 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/widgets/sales_chart_dialog.dart:429:61 • curly_braces_in_flow_control_structures
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/sales_chart_dialog.dart:483:53 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/sales_chart_dialog.dart:484:53 • deprecated_member_use
+   info • The import of 'package:flutter/material.dart' is unnecessary because all of the used elements are also provided by the import of 'package:donapos_mobile/design_system.dart' • lib/widgets/sync_center_dialog.dart:4:8 • unnecessary_import
+warning • Unused import: 'package:donapos_mobile/widgets/upload_review_dialog.dart' • lib/widgets/sync_center_dialog.dart:5:8 • unused_import
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/sync_center_dialog.dart:62:42 • deprecated_member_use
+   info • Use 'const' with the constructor to improve performance • lib/widgets/sync_center_dialog.dart:63:24 • prefer_const_constructors
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • lib/widgets/sync_center_dialog.dart:64:29 • prefer_const_literals_to_create_immutables
+   info • Use 'const' with the constructor to improve performance • lib/widgets/sync_center_dialog.dart:67:21 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/widgets/sync_center_dialog.dart:68:30 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/widgets/sync_center_dialog.dart:70:32 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/widgets/sync_center_dialog.dart:86:25 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/widgets/sync_center_dialog.dart:86:38 • prefer_const_constructors
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/sync_center_dialog.dart:88:49 • deprecated_member_use
+   info • Use 'const' with the constructor to improve performance • lib/widgets/sync_center_dialog.dart:100:32 • prefer_const_constructors
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/sync_center_dialog.dart:317:28 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/sync_center_dialog.dart:318:31 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/sync_center_dialog.dart:330:32 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/sync_center_dialog.dart:349:49 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/sync_center_dialog.dart:368:61 • deprecated_member_use
+   info • The import of 'package:flutter/material.dart' is unnecessary because all of the used elements are also provided by the import of 'package:donapos_mobile/design_system.dart' • lib/widgets/sync_progress_dialog.dart:2:8 • unnecessary_import
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/sync_progress_dialog.dart:45:54 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/sync_progress_dialog.dart:85:57 • deprecated_member_use
+   info • The import of 'package:flutter/material.dart' is unnecessary because all of the used elements are also provided by the import of 'package:donapos_mobile/design_system.dart' • lib/widgets/terms_agreement_dialog.dart:1:8 • unnecessary_import
+   info • The import of 'package:flutter/material.dart' is unnecessary because all of the used elements are also provided by the import of 'package:donapos_mobile/design_system.dart' • lib/widgets/transaction_history_dialog.dart:1:8 • unnecessary_import
+   info • Don't use 'BuildContext's across async gaps • lib/widgets/transaction_history_dialog.dart:63:23 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/widgets/transaction_history_dialog.dart:285:28 • use_build_context_synchronously
+   info • Don't invoke 'print' in production code • lib/widgets/transaction_history_dialog.dart:287:11 • avoid_print
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/transaction_history_dialog.dart:376:74 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/transaction_history_dialog.dart:383:85 • deprecated_member_use
+   info • The import of 'package:flutter/material.dart' is unnecessary because all of the used elements are also provided by the import of 'package:donapos_mobile/design_system.dart' • lib/widgets/upload_review_dialog.dart:2:8 • unnecessary_import
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/upload_review_dialog.dart:52:46 • deprecated_member_use
+   info • The import of 'package:flutter/material.dart' is unnecessary because all of the used elements are also provided by the import of 'package:donapos_mobile/design_system.dart' • lib/widgets/waiter_management_dialog.dart:1:8 • unnecessary_import
+   info • Don't invoke 'print' in production code • lib/widgets/waiter_management_dialog.dart:33:7 • avoid_print
+   info • Don't use 'BuildContext's across async gaps • lib/widgets/waiter_management_dialog.dart:44:20 • use_build_context_synchronously
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/waiter_management_dialog.dart:59:32 • deprecated_member_use
+   info • 'activeColor' is deprecated and shouldn't be used. Use activeThumbColor instead. This feature was deprecated after v3.31.0-2.0.pre • lib/widgets/waiter_management_dialog.dart:101:31 • deprecated_member_use
+   info • The import of 'package:flutter/material.dart' is unnecessary because all of the used elements are also provided by the import of 'package:donapos_mobile/design_system.dart' • lib/widgets/waiter_selector_dialog.dart:1:8 • unnecessary_import
+   info • Don't invoke 'print' in production code • lib/widgets/waiter_selector_dialog.dart:39:7 • avoid_print
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/waiter_selector_dialog.dart:70:56 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/waiter_selector_dialog.dart:110:70 • deprecated_member_use
+   info • The import of 'dart:typed_data' is unnecessary because all of the used elements are also provided by the import of 'package:flutter/services.dart' • packages/blue_thermal_printer/lib/blue_thermal_printer.dart:2:8 • unnecessary_import
+   info • The constant name 'STATE_OFF' isn't a lowerCamelCase identifier • packages/blue_thermal_printer/lib/blue_thermal_printer.dart:7:20 • constant_identifier_names
+   info • The constant name 'STATE_TURNING_ON' isn't a lowerCamelCase identifier • packages/blue_thermal_printer/lib/blue_thermal_printer.dart:8:20 • constant_identifier_names
+   info • The constant name 'STATE_ON' isn't a lowerCamelCase identifier • packages/blue_thermal_printer/lib/blue_thermal_printer.dart:9:20 • constant_identifier_names
+   info • The constant name 'STATE_TURNING_OFF' isn't a lowerCamelCase identifier • packages/blue_thermal_printer/lib/blue_thermal_printer.dart:10:20 • constant_identifier_names
+   info • The constant name 'STATE_BLE_TURNING_ON' isn't a lowerCamelCase identifier • packages/blue_thermal_printer/lib/blue_thermal_printer.dart:11:20 • constant_identifier_names
+   info • The constant name 'STATE_BLE_ON' isn't a lowerCamelCase identifier • packages/blue_thermal_printer/lib/blue_thermal_printer.dart:12:20 • constant_identifier_names
+   info • The constant name 'STATE_BLE_TURNING_OFF' isn't a lowerCamelCase identifier • packages/blue_thermal_printer/lib/blue_thermal_printer.dart:13:20 • constant_identifier_names
+   info • The constant name 'ERROR' isn't a lowerCamelCase identifier • packages/blue_thermal_printer/lib/blue_thermal_printer.dart:14:20 • constant_identifier_names
+   info • The constant name 'CONNECTED' isn't a lowerCamelCase identifier • packages/blue_thermal_printer/lib/blue_thermal_printer.dart:15:20 • constant_identifier_names
+   info • The constant name 'DISCONNECTED' isn't a lowerCamelCase identifier • packages/blue_thermal_printer/lib/blue_thermal_printer.dart:16:20 • constant_identifier_names
+   info • The constant name 'DISCONNECT_REQUESTED' isn't a lowerCamelCase identifier • packages/blue_thermal_printer/lib/blue_thermal_printer.dart:17:20 • constant_identifier_names
+   info • Unnecessary 'const' keyword • packages/blue_thermal_printer/lib/blue_thermal_printer.dart:22:7 • unnecessary_const
+   info • Unnecessary 'const' keyword • packages/blue_thermal_printer/lib/blue_thermal_printer.dart:25:7 • unnecessary_const
+   info • Unnecessary 'const' keyword • packages/blue_thermal_printer/lib/blue_thermal_printer.dart:28:7 • unnecessary_const
+   info • Unnecessary 'new' keyword • packages/blue_thermal_printer/lib/blue_thermal_printer.dart:31:7 • unnecessary_new
+   info • The private field _instance could be 'final' • packages/blue_thermal_printer/lib/blue_thermal_printer.dart:41:29 • prefer_final_fields
+   info • Unnecessary 'new' keyword • packages/blue_thermal_printer/lib/blue_thermal_printer.dart:41:41 • unnecessary_new
+   info • Unnecessary 'this.' qualifier • packages/blue_thermal_printer/lib/blue_thermal_printer.dart:184:17 • unnecessary_this
+   info • Unnecessary 'this.' qualifier • packages/blue_thermal_printer/lib/blue_thermal_printer.dart:185:20 • unnecessary_this
+   info • Unnecessary 'this.' qualifier • packages/blue_thermal_printer/lib/blue_thermal_printer.dart:186:17 • unnecessary_this
+   info • Unnecessary 'this.' qualifier • packages/blue_thermal_printer/lib/blue_thermal_printer.dart:187:22 • unnecessary_this
+   info • The member '==' overrides an inherited member but isn't annotated with '@override' • packages/blue_thermal_printer/lib/blue_thermal_printer.dart:190:12 • annotate_overrides
+   info • Unnecessary 'this.' qualifier • packages/blue_thermal_printer/lib/blue_thermal_printer.dart:191:57 • unnecessary_this
+   info • 'setMockMethodCallHandler' is deprecated and shouldn't be used. Use tester.binding.defaultBinaryMessenger.setMockMethodCallHandler or TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler instead. Pass the channel as the first argument. This feature was deprecated after v3.9.0-19.0.pre • packages/blue_thermal_printer/test/blue_thermal_printer_test.dart:8:13 • deprecated_member_use
+   info • 'setMockMethodCallHandler' is deprecated and shouldn't be used. Use tester.binding.defaultBinaryMessenger.setMockMethodCallHandler or TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler instead. Pass the channel as the first argument. This feature was deprecated after v3.9.0-19.0.pre • packages/blue_thermal_printer/test/blue_thermal_printer_test.dart:14:13 • deprecated_member_use
+
+642 issues found. (ran in 3.8s)

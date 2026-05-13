@@ -1,0 +1,722 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:donapos_mobile/db_helper.dart';
+import 'package:donapos_mobile/models.dart';
+
+class ApiService {
+  // Default values
+  static const String defaultBaseUrl = 'https://donapos.serverzone.web.id';
+  static const String defaultClientId = '12';
+  static const String defaultClientSecret = 'i5EJwhAXvZVJDSuQVx5gkWuXFFtaDybZtCI3lurv';
+  static const String defaultLocationId = '1';
+  static const String defaultBusinessName = 'DonaPOS';
+  static const String defaultLocationName = 'Pusat';
+
+  Future<String> getBaseUrl() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('base_url') ?? defaultBaseUrl;
+  }
+
+  Future<String> getClientId() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('client_id') ?? defaultClientId;
+  }
+
+  Future<String> getClientSecret() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('client_secret') ?? defaultClientSecret;
+  }
+
+  Future<String> getDefaultSaleType() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('default_sale_type') ?? 'dinein';
+  }
+
+  Future<String> getLocationId() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('location_id') ?? defaultLocationId;
+  }
+  
+  Future<String> getBusinessName() async {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getString('business_name') ?? defaultBusinessName;
+  }
+  
+  Future<String> getLocationName() async {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getString('location_name') ?? defaultLocationName;
+  }
+  
+  Future<void> saveConfig(String baseUrl, String clientId, String clientSecret, String locationId, [String? businessName, String? locationName, String? defaultSaleType]) async {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('base_url', baseUrl);
+      await prefs.setString('client_id', clientId);
+      await prefs.setString('client_secret', clientSecret);
+      await prefs.setString('location_id', locationId);
+      if (businessName != null) await prefs.setString('business_name', businessName);
+      if (locationName != null) await prefs.setString('location_name', locationName);
+      if (defaultSaleType != null) await prefs.setString('default_sale_type', defaultSaleType);
+  }
+
+  Future<bool> checkConnection() async {
+      try {
+          final baseUrl = await getBaseUrl();
+          if (baseUrl.isEmpty) return false;
+          
+          print('[API] Checking connection to: $baseUrl/login');
+          final response = await http.get(Uri.parse('$baseUrl/login'))
+              .timeout(const Duration(seconds: 10));
+              
+          print('[API] Connection check response: ${response.statusCode}');
+          return response.statusCode < 500; 
+      } catch (e) {
+          print('[API] Connection error: $e');
+          return false;
+      }
+  }
+
+  // Login
+  Future<bool> login(String username, String password) async {
+    try {
+      final baseUrl = await getBaseUrl();
+      final clientId = await getClientId();
+      final clientSecret = await getClientSecret();
+      
+      final response = await http.post(
+        Uri.parse('$baseUrl/oauth/token'),
+        body: {
+          'grant_type': 'password',
+          'client_id': clientId,
+          'client_secret': clientSecret,
+          'username': username,
+          'password': password,
+          'scope': '',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final token = data['access_token'];
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('token', token);
+        return true;
+      }
+      print('Login failed: ${response.statusCode} ${response.body}');
+      return false;
+    } catch (e) {
+      print('Login error: $e');
+      return false;
+    }
+  }
+
+  // --- Price Group Preferences ---
+  Future<void> savePriceGroupConfig(int? dineInId, int? takeAwayId, int? onlineId) async {
+      final prefs = await SharedPreferences.getInstance();
+      if (dineInId != null) await prefs.setInt('pg_dinein', dineInId);
+      if (takeAwayId != null) await prefs.setInt('pg_takeaway', takeAwayId);
+      if (onlineId != null) await prefs.setInt('pg_online', onlineId);
+  }
+
+  Future<Map<String, int?>> getPriceGroupConfig() async {
+      final prefs = await SharedPreferences.getInstance();
+      return {
+          'dinein': prefs.getInt('pg_dinein'),
+          'takeaway': prefs.getInt('pg_takeaway'),
+          'online': prefs.getInt('pg_online')
+      };
+  }
+  
+  // Wrapper helper for headers
+  Future<Map<String, String>> _getHeaders() async {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+      return {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+      };
+  }
+  
+  Future<Map<String, dynamic>?> getUserInfo() async {
+      final baseUrl = await getBaseUrl();
+      final headers = await _getHeaders();
+      try {
+          final response = await http.get(Uri.parse('$baseUrl/connector/api/user/loggedin'), headers: headers);
+          if (response.statusCode == 200) {
+               final jsonResponse = json.decode(response.body);
+               // Usually wrapped in 'data' if using Resources, but sometimes not. 
+               // CommonResource usually wraps in data.
+               if (jsonResponse['data'] != null) {
+                   return jsonResponse['data'];
+               }
+               return jsonResponse;
+          }
+      } catch (e) {
+          print('Get User Info Error: $e');
+      }
+      return null;
+  }
+
+  // Fetch Business & Location Details (Auto-update names)
+  Future<void> syncBusinessDetails() async {
+      final baseUrl = await getBaseUrl();
+      final locationId = await getLocationId();
+      final headers = await _getHeaders();
+      if (headers['Authorization'] == 'Bearer null') return;
+      
+      try {
+           final response = await http.get(Uri.parse('$baseUrl/connector/api/business-location'), headers: headers);
+           if (response.statusCode == 200) {
+               final data = json.decode(response.body);
+               final List locations = data['data'];
+               
+               // Find matching location
+               final myLoc = locations.firstWhere((l) => l['id'].toString() == locationId || l['location_id'] == locationId, orElse: () => null);
+               
+               if (myLoc != null) {
+                   final prefs = await SharedPreferences.getInstance();
+                   await prefs.setString('location_name', myLoc['name']);
+                   
+                   // New: Save more info for receipt
+                   String address = "${myLoc['landmark'] ?? ''}, ${myLoc['city'] ?? ''}".trim();
+                   if (address.startsWith(',')) address = address.substring(1).trim();
+                   if (address.endsWith(',')) address = address.substring(0, address.length - 1).trim();
+                   if (address.isEmpty) address = "Jakarta Barat";
+
+                   await prefs.setString('business_name', myLoc['name'] ?? 'donapos');
+                   await prefs.setString('business_address', address);
+                   await prefs.setString('business_mobile', myLoc['mobile'] ?? '081219752227');
+                   
+                   // Invoice Layout Labels & Footer
+                   if (myLoc['invoice_layout'] != null) {
+                       final layout = myLoc['invoice_layout'];
+                       await prefs.setString('lbl_subtotal', layout['sub_total_label'] ?? 'Subtotal');
+                       await prefs.setString('lbl_discount', layout['discount_label'] ?? 'Diskon');
+                       await prefs.setString('lbl_tax', layout['tax_label'] ?? 'Pajak');
+                       await prefs.setString('lbl_total', layout['total_label'] ?? 'TOTAL');
+                       await prefs.setString('lbl_return', layout['change_return_label'] ?? 'Kembalian');
+                       await prefs.setString('footer_text', layout['footer_text'] ?? 'Terima Kasih');
+                   }
+
+                   // Invoice Scheme Prefix
+                   if (myLoc['invoice_scheme'] != null) {
+                       final scheme = myLoc['invoice_scheme'];
+                       await prefs.setString('invoice_prefix', scheme['prefix'] ?? 'MBL');
+                   }
+
+                   print('Real Location & Layout Synced: ${myLoc['name']} - Prefix: ${prefs.getString('invoice_prefix')}');
+               }
+           }
+      } catch (e) {
+          print('Sync Business Error: $e');
+      }
+  }
+
+  Future<int> syncUsers() async {
+      final baseUrl = await getBaseUrl();
+      final locationId = await getLocationId();
+      final headers = await _getHeaders();
+      if (headers['Authorization'] == 'Bearer null') return 0;
+      
+      try {
+          // Attempt to filter by location if API supports it, otherwise fetch all
+          final response = await http.get(Uri.parse('$baseUrl/connector/api/user?location_id=$locationId'), headers: headers);
+          
+          if (response.statusCode == 200) {
+              final data = json.decode(response.body);
+              final List users = data['data'];
+              
+              await DatabaseHelper.instance.clearUsers();
+              int count = 0;
+              
+              for (var u in users) {
+                  print('User Sync Data: ${u['username']} - Image: ${u['image_url']}'); // Debug Log
+
+                  int enablePin = u['is_enable_service_staff_pin'] ?? 0;
+                  String? servicePin = u['service_staff_pin'];
+                  
+                  // Use service_staff_pin if enabled, otherwise null
+                  String? pin;
+                  if (enablePin == 1 && servicePin != null && servicePin.isNotEmpty) {
+                      pin = servicePin;
+                  }
+                  
+                  // Only save users who have a valid PIN
+                  if (pin != null) {
+                      String? imageUrl = u['image_url'];
+                      // Fallback for VPS which might not have the backend update yet
+                      if (imageUrl == null || imageUrl.isEmpty) {
+                         String name = u['first_name'];
+                         if (u['last_name'] != null) name += ' ${u['last_name']}';
+                         imageUrl = 'https://ui-avatars.com/api/?name=${Uri.encodeComponent(name)}&background=random&color=fff';
+                      }
+
+                      await DatabaseHelper.instance.insertUser({
+                          'id': u['id'],
+                          'username': u['username'],
+                          'first_name': u['first_name'],
+                          'last_name': u['last_name'],
+                          'pin': pin,
+                          'profile_image': imageUrl
+                      });
+                      count++;
+                  }
+              }
+              return count;
+          }
+      } catch (e) {
+          print('Sync Users Error: $e');
+          throw e; // Propagate error
+      }
+      return 0;
+  }
+
+  Future<int> syncCategories() async {
+      final baseUrl = await getBaseUrl();
+      final headers = await _getHeaders();
+      if (headers['Authorization'] == 'Bearer null') return 0;
+      
+      print('[API] Syncing Categories from: $baseUrl/connector/api/taxonomy?type=product');
+      try {
+          final response = await http.get(Uri.parse('$baseUrl/connector/api/taxonomy?type=product'), headers: headers);
+          print('[API] Cat Sync Response: ${response.statusCode}');
+          
+          if (response.statusCode == 200) {
+              final data = json.decode(response.body);
+              final List cats = data['data'] ?? [];
+              print('[API] Found ${cats.length} categories');
+              
+              await DatabaseHelper.instance.clearCategories();
+              int count = 0;
+              for (var c in cats) {
+                  // Ensure ID is integer
+                  int? id = int.tryParse(c['id'].toString());
+                  if (id != null) {
+                      await DatabaseHelper.instance.insertCategory({
+                          'id': id, 
+                          'name': c['name'] ?? 'Unknown'
+                      });
+                      count++;
+                  }
+              }
+              return count;
+          } else {
+              print('[API] Cat Sync Error: ${response.body}');
+          }
+      } catch (e) {
+          print('Sync Cat Error: $e');
+      }
+      return 0;
+  }
+
+  Future<void> syncTypesOfService() async {
+    final baseUrl = await getBaseUrl();
+    final headers = await _getHeaders();
+    try {
+      final response = await http.get(Uri.parse('$baseUrl/connector/api/types-of-service'), headers: headers);
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final list = data['data'] as List;
+        await DatabaseHelper.instance.clearTypesOfService();
+        for (var item in list) {
+          await DatabaseHelper.instance.insertTypeOfService({
+            'id': item['id'],
+            'name': item['name'],
+            'description': item['description']
+          });
+        }
+        print('[API] Synced ${list.length} types of service.');
+      }
+    } catch (e) {
+      print('Sync Types of Service Error: $e');
+    }
+  }
+
+  Future<int> syncResTables() async {
+      final baseUrl = await getBaseUrl();
+      final headers = await _getHeaders();
+      final locationId = await getLocationId();
+      
+      final url = '$baseUrl/connector/api/res-table?location_id=$locationId';
+      print('[API] Syncing Restaurant Tables...');
+      print('[API] URL: $url');
+      
+      try {
+          final response = await http.get(
+              Uri.parse('$baseUrl/connector/api/res-table?location_id=$locationId'), 
+              headers: headers
+          );
+          
+          print('[API] Response Status: ${response.statusCode}');
+          print('[API] Response Body: ${response.body.substring(0, response.body.length > 300 ? 300 : response.body.length)}...');
+          
+          if (response.statusCode == 200) {
+              final data = json.decode(response.body);
+              print('[API] Parsed success=${data['success']}, tables count=${data['data']?.length ?? 0}');
+              if (data['success'] == true) {
+                  final List tables = data['data'] ?? [];
+                  
+                  await DatabaseHelper.instance.clearResTables();
+                  
+                  int count = 0;
+                  for (var t in tables) {
+                      int? id = int.tryParse(t['id'].toString());
+                      if (id != null) {
+                          await DatabaseHelper.instance.insertResTable({
+                              'id': id,
+                              'business_id': int.tryParse(t['business_id']?.toString() ?? '0') ?? 0,
+                              'location_id': int.tryParse(t['location_id']?.toString() ?? '0') ?? 0,
+                              'name': t['name'] ?? 'Unknown',
+                              'description': t['description'],
+                          });
+                          count++;
+                      }
+                  }
+                  
+                  print('[API] ✓ Successfully synced $count tables to database!');
+                  return count;
+              } else {
+                  print('[API] Tables Sync Error: ${data['message']}');
+              }
+          } else {
+              print('[API] Tables Sync HTTP Error: ${response.statusCode}');
+          }
+      } catch (e, stackTrace) {
+          print('[API] ❌ Sync Tables Error: $e');
+          print('[API] Stack: $stackTrace');
+      }
+      return 0;
+  }
+
+  Future<void> syncPriceGroups() async {
+      final baseUrl = await getBaseUrl();
+      final headers = await _getHeaders();
+      
+      try {
+          final response = await http.get(Uri.parse('$baseUrl/connector/api/selling-price-group'), headers: headers);
+          if (response.statusCode == 200) {
+              final data = json.decode(response.body);
+              final List groups = data['data'];
+              
+              await DatabaseHelper.instance.clearPriceGroups();
+              for (var g in groups) {
+                  await DatabaseHelper.instance.insertPriceGroup({
+                      'id': g['id'],
+                      'name': g['name']
+                  });
+              }
+              print('Synced ${groups.length} Price Groups');
+          }
+      } catch (e) {
+          print('Sync Price Groups Error: $e');
+      }
+  }
+
+  Future<void> syncTaxes() async {
+      final baseUrl = await getBaseUrl();
+      final headers = await _getHeaders();
+      try {
+          final response = await http.get(Uri.parse('$baseUrl/connector/api/tax'), headers: headers);
+          if (response.statusCode == 200) {
+              final data = json.decode(response.body);
+              final List taxes = data['data'];
+
+              await DatabaseHelper.instance.clearTaxes();
+              for (var t in taxes) {
+                  await DatabaseHelper.instance.insertTax({
+                      'id': t['id'],
+                      'name': t['name'],
+                      'amount': (t['amount'] as num).toDouble()
+                  });
+              }
+              print('Synced ${taxes.length} Taxes');
+          }
+      } catch (e) {
+          print('Sync Taxes Error: $e');
+      }
+  }
+
+  Future<void> syncDiscounts() async {
+      final baseUrl = await getBaseUrl();
+      final headers = await _getHeaders();
+      final prefs = await SharedPreferences.getInstance();
+      String log = "Sync Start: ${DateTime.now()}\n";
+      
+      try {
+          final url = '$baseUrl/connector/api/discount';
+          log += "URL: $url\n";
+          final response = await http.get(Uri.parse(url), headers: headers);
+          
+          if (response.statusCode == 200) {
+              final data = json.decode(response.body);
+              final List discounts = data['data'] ?? [];
+              log += "Data received: ${discounts.length} items\n";
+              
+              await DatabaseHelper.instance.clearDiscounts();
+              for (var d in discounts) {
+                  int dId = int.tryParse(d['id'].toString()) ?? 0;
+                  log += "- Processing ID $dId: ${d['name']}\n";
+                  
+                  await DatabaseHelper.instance.insertDiscount({
+                      'id': dId,
+                      'name': d['name'],
+                      'type': d['discount_type'],
+                      'amount': double.tryParse(d['discount_amount'].toString()) ?? 0.0,
+                      'priority': int.tryParse(d['priority'].toString()) ?? 0,
+                      'starts_at': d['starts_at'],
+                      'ends_at': d['ends_at'],
+                      'is_active': 1,
+                      'brand_id': d['brand_id'],
+                      'category_id': d['category_id'],
+                      'spg': d['spg']?.toString()
+                  });
+                  
+                  if (d['variations'] != null) {
+                      for (var v in d['variations']) {
+                          int vId = int.tryParse(v['id'].toString()) ?? 0;
+                          await DatabaseHelper.instance.insertDiscountVariation(dId, vId); 
+                      }
+                  }
+              }
+              log += "Sync Success.\n";
+          } else {
+              log += "HTTP Error: ${response.statusCode}\nBody: ${response.body}\n";
+          }
+      } catch (e) {
+          log += "Exception: $e\n";
+      }
+      
+      await prefs.setString('last_sync_log', log);
+      print(log);
+  }
+
+  Future<void> syncProducts({bool includeImages = true}) async {
+    final baseUrl = await getBaseUrl();
+    final locationId = await getLocationId();
+    final headers = await _getHeaders();
+    if (headers['Authorization'] == 'Bearer null') return;
+
+    try {
+      // Fetch products with selling_price_group=1 to get group prices
+      final response = await http.get(Uri.parse('$baseUrl/connector/api/product?location_id=$locationId&selling_price_group=1'), headers: headers);
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final List products = data['data'];
+
+        await DatabaseHelper.instance.clearProducts();
+        await DatabaseHelper.instance.clearVariationGroupPrices();
+
+        for (var p in products) {
+            double price = 0.0;
+            int? variationId;
+            
+            // Extract Main Price & Variation ID
+            List pVars = p['product_variations'] ?? [];
+            if (pVars.isNotEmpty) {
+                List vars = pVars[0]['variations'] ?? [];
+                if (vars.isNotEmpty) {
+                    var v = vars[0];
+                    price = double.tryParse(v['sell_price_inc_tax'].toString()) ?? 0.0;
+                    variationId = v['id'];
+                    
+                    // Parse Group Prices
+                    List groupPrices = v['group_prices'] ?? v['selling_price_group'] ?? [];
+                    
+                    for (var gp in groupPrices) {
+                        await DatabaseHelper.instance.insertVariationGroupPrice({
+                            'variation_id': variationId,
+                            'price_group_id': gp['price_group_id'],
+                            'price': double.tryParse(gp['price_inc_tax'].toString()) ?? 0.0
+                        });
+                    }
+                }
+            }
+            
+            int storageId = (p['type'] == 'single' && variationId != null) ? variationId : p['id'];
+            if (variationId != null) storageId = variationId;
+
+            int? catId = int.tryParse(p['category_id']?.toString() ?? '');
+            if (catId == null && p['category'] != null) {
+                catId = int.tryParse(p['category']['id']?.toString() ?? '');
+            }
+
+            int? brandId = int.tryParse(p['brand_id']?.toString() ?? '');
+            if (brandId == null && p['brand'] != null) {
+                brandId = int.tryParse(p['brand']['id']?.toString() ?? '');
+            }
+
+            await DatabaseHelper.instance.insertProduct({
+              'id': storageId, 
+              'parent_id': p['id'],
+              'name': p['name'],
+              'price_dinein': price,
+              'price_takeaway': price, 
+              'price_online': price,
+              'category_id': catId,
+              'brand_id': brandId,
+              'image_url': includeImages ? p['image_url'] : null
+            });
+        }
+        print('[API] Synced ${products.length} products with categories.');
+      }
+    } catch (e) {
+      print('Sync Products Error: $e');
+    }
+  }
+
+  
+  Future<void> syncProductImages() async {
+      await syncProducts(includeImages: true);
+  }
+  
+  Future<void> syncAll() async {
+      await syncBusinessDetails(); // New: Fetch Location Name
+      await syncUsers();
+      await syncTypesOfService(); // New
+      await syncCategories();
+      await syncTaxes(); // New
+      await syncDiscounts(); // New
+      await syncProducts();
+      
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('last_sync_time', DateTime.now().toIso8601String());
+  }
+
+  Future<int> syncTransactions() async {
+    final baseUrl = await getBaseUrl();
+    final locationId = await getLocationId();
+    final headers = await _getHeaders();
+    if (headers['Authorization'] == 'Bearer null') {
+        print('Sync TX aborted: No Auth Header');
+        return 0;
+    }
+
+    int syncedCount = 0;
+    final unsynced = await DatabaseHelper.instance.getUnsyncedTransactions();
+    print('Sync TX: Found ${unsynced.length} unsynced transactions');
+
+    for (var tx in unsynced) {
+      try {
+        final items = await DatabaseHelper.instance.getTransactionItems(tx['id']);
+        print('Sync TX: Processing ID ${tx['id']} with ${items.length} items');
+        
+        final List<Map<String, dynamic>> productsPayload = [];
+        for (var i in items) {
+           final p = await DatabaseHelper.instance.getProductById(i['product_id']);
+           productsPayload.add({
+              'product_id': p?['parent_id'] ?? i['product_id'],
+              'variation_id': i['product_id'], 
+              'quantity': i['qty'],
+              'unit_price': i['price'],
+              'note': i['note']
+           });
+        }
+
+        // Find types_of_service_id
+        int? serviceTypeId;
+        if (tx['sale_type'] != null) {
+            final allServices = await DatabaseHelper.instance.getAllTypesOfService();
+            // Match name (case insensitive)
+            String st = tx['sale_type'].toString().toLowerCase().replaceAll('-', ' ');
+            for (var s in allServices) {
+                if (s['name'].toString().toLowerCase().contains(st)) {
+                    serviceTypeId = s['id'];
+                    break;
+                }
+            }
+        }
+
+        final transactionDateStr = tx['created_at'] != null 
+            ? DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.parse(tx['created_at']))
+            : DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
+
+        final payload = {
+          'sells': [{
+            'status': 'final',
+            'contact_id': 1, 
+            'transaction_date': transactionDateStr,
+            'location_id': locationId, 
+            'final_total': tx['total'],
+            'discount_amount': tx['discount'],
+            'discount_type': 'fixed',
+            'table_id': tx['res_table_id'],
+            'types_of_service_id': serviceTypeId,
+            'payments': [{'amount': tx['total'], 'method': 'cash'}],
+            'products': productsPayload
+          }]
+        };
+
+        print('Sync TX [PAYLOAD]: ${json.encode(payload)}');
+
+        final response = await http.post(
+          Uri.parse('$baseUrl/connector/api/sell'),
+          headers: headers,
+          body: json.encode(payload),
+        );
+
+        print('Sync TX [RESPONSE]: ${response.statusCode} - ${response.body}');
+        if (response.statusCode == 200 || response.statusCode == 201) {
+          await DatabaseHelper.instance.markTransactionSynced(tx['id']);
+          syncedCount++;
+        } else {
+          // If server returns error, we might want to know why
+          final errorData = json.decode(response.body);
+          throw Exception('Server Error ${response.statusCode}: ${errorData['message'] ?? response.body}');
+        }
+      } catch (e) {
+        print('Sync TX Exception: $e');
+        rethrow; // Re-throw to show error in UI
+      }
+    }
+    return syncedCount;
+  }
+
+  Future<int> getUnsyncedCount() async {
+      final unsynced = await DatabaseHelper.instance.getUnsyncedTransactions();
+      return unsynced.length;
+  }
+
+  // --- Reports & Closing ---
+  Future<Map<String, dynamic>> getKasirSummary() async {
+    final baseUrl = await getBaseUrl();
+    final headers = await _getHeaders();
+    final response = await http.get(Uri.parse('$baseUrl/connector/api/report/kasir-summary'), headers: headers);
+
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      throw Exception('Failed to load Kasir Summary: ${response.body}');
+    }
+  }
+
+  Future<Map<String, dynamic>> getZReport(String date) async {
+    final baseUrl = await getBaseUrl();
+    final headers = await _getHeaders();
+    final response = await http.get(Uri.parse('$baseUrl/connector/api/report/z-report?tanggal=$date'), headers: headers);
+
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      throw Exception('Failed to load Z-Report: ${response.body}');
+    }
+  }
+
+  Future<void> closingDay() async {
+    final baseUrl = await getBaseUrl();
+    final headers = await _getHeaders();
+    final locationId = await getLocationId();
+    
+    final response = await http.post(
+      Uri.parse('$baseUrl/connector/api/report/closing-day'), 
+      headers: headers,
+      body: json.encode({'location_id': locationId})
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Closing Day Failed: ${response.body}');
+    }
+  }
+}
