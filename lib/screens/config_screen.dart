@@ -20,6 +20,9 @@ import 'package:donapos_mobile/config.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
+import 'package:donapos_mobile/screens/login_screen.dart';
+import 'package:donapos_mobile/sync_service.dart';
+import 'package:donapos_mobile/utils_scaler.dart';
 
 class ConfigScreen extends StatefulWidget {
   const ConfigScreen({super.key});
@@ -463,12 +466,10 @@ class _ConfigScreenState extends State<ConfigScreen> {
         setState(() => _isLoading = false);
 
         if (mounted) {
-            await showAppModal(
-              context, 
-              title: 'SIAP DIGUNAKAN', 
-              message: 'AKTIVASI BERHASIL.\nBISNIS: ${_businessNameController.text}\nUSER: $userCount'
-            );
-            Navigator.pop(context, true); 
+            // Tampilkan dialog 3 pilihan setelah aktivasi berhasil
+            if (!mounted) return;
+            SyncService().startPeriodicSync();
+            _showPostActivationDialog(userCount);
         }
 
       } else {
@@ -489,6 +490,187 @@ class _ConfigScreenState extends State<ConfigScreen> {
     }
   }
 
+  void _showPostActivationDialog(int userCount) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        child: Container(
+          constraints: BoxConstraints(maxWidth: 480.sc),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12.sc),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.25),
+                blurRadius: 30.sc,
+                offset: Offset(0, 10.sc),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Header
+              Container(
+                width: double.infinity,
+                padding: EdgeInsets.symmetric(vertical: 24.sc),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF4CAF50),
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(12.sc)),
+                ),
+                child: Column(
+                  children: [
+                    Icon(Icons.check_circle_rounded, color: Colors.white, size: 48.sc),
+                    SizedBox(height: 12.sc),
+                    Text('AKTIVASI BERHASIL!', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18.sp, letterSpacing: 1.5.sc)),
+                  ],
+                ),
+              ),
+              // Info
+              Padding(
+                padding: EdgeInsets.all(20.sc),
+                child: Column(
+                  children: [
+                    Container(
+                      width: double.infinity,
+                      padding: EdgeInsets.all(12.sc),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade50,
+                        borderRadius: BorderRadius.circular(8.sc),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _infoRow('BISNIS', _businessNameController.text),
+                          SizedBox(height: 4.sc),
+                          _infoRow('LOKASI', _locationNameController.text),
+                          SizedBox(height: 4.sc),
+                          _infoRow('STAFF', '$userCount orang tersinkronisasi'),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: 16.sc),
+                    Text('Pilih langkah selanjutnya:', style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w700, color: Colors.black54)),
+                    SizedBox(height: 16.sc),
+                    // Option 1: Admin Panel
+                    _choiceButton(
+                      ctx: ctx,
+                      icon: Icons.admin_panel_settings_rounded,
+                      title: 'BUKA PANEL ADMIN',
+                      subtitle: 'Sinkronisasi data produk, kategori, dll.',
+                      color: MetroColors.primary,
+                      onTap: () {
+                        Navigator.pop(ctx);
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(builder: (_) => const LoginScreen(showAdminLogin: true)),
+                          (route) => false,
+                        );
+                      },
+                    ),
+                    SizedBox(height: 10.sc),
+                    // Option 2: User List
+                    _choiceButton(
+                      ctx: ctx,
+                      icon: Icons.people_alt_rounded,
+                      title: 'MASUK SEBAGAI KASIR',
+                      subtitle: 'Pilih user dan masukkan PIN.',
+                      color: MetroColors.secondary,
+                      onTap: () {
+                        Navigator.pop(ctx);
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(builder: (_) => const LoginScreen()),
+                          (route) => false,
+                        );
+                      },
+                    ),
+                    SizedBox(height: 10.sc),
+                    // Option 3: Close App
+                    _choiceButton(
+                      ctx: ctx,
+                      icon: Icons.power_settings_new_rounded,
+                      title: 'TUTUP APLIKASI',
+                      subtitle: 'Setup selesai. Buka kembali nanti.',
+                      color: Colors.grey.shade600,
+                      onTap: () {
+                        Navigator.pop(ctx);
+                        // Gunakan exit(0) langsung agar tidak ada warning Android
+                        Future.delayed(const Duration(milliseconds: 200), () => exit(0));
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _infoRow(String label, String value) {
+    return Row(
+      children: [
+        SizedBox(
+          width: 60.sc,
+          child: Text(label, style: TextStyle(fontSize: 10.sp, fontWeight: FontWeight.w900, color: Colors.black38)),
+        ),
+        Expanded(child: Text(value.toUpperCase(), style: TextStyle(fontSize: 11.sp, fontWeight: FontWeight.w900, color: MetroColors.primary))),
+      ],
+    );
+  }
+
+  Widget _choiceButton({
+    required BuildContext ctx,
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8.sc),
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: 16.sc, vertical: 14.sc),
+          decoration: BoxDecoration(
+            border: Border.all(color: color.withOpacity(0.3), width: 1.5),
+            borderRadius: BorderRadius.circular(8.sc),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 40.sc, height: 40.sc,
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8.sc),
+                ),
+                child: Icon(icon, color: color, size: 22.sc),
+              ),
+              SizedBox(width: 14.sc),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title, style: TextStyle(fontWeight: FontWeight.w900, fontSize: 12.sp, color: color, letterSpacing: 0.5.sc)),
+                    SizedBox(height: 2.sc),
+                    Text(subtitle, style: TextStyle(fontSize: 10.sp, color: Colors.black45, fontWeight: FontWeight.w600)),
+                  ],
+                ),
+              ),
+              Icon(Icons.chevron_right_rounded, color: color.withOpacity(0.5), size: 24.sc),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
   void _uploadConfigFile() async {
     try {

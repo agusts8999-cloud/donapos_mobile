@@ -4,6 +4,7 @@ import 'package:donapos_mobile/design_system.dart';
 import 'package:provider/provider.dart';
 import 'package:donapos_mobile/language_provider.dart';
 import 'package:donapos_mobile/utils_scaler.dart';
+import 'package:donapos_mobile/widgets/digital_clock.dart';
 
 import 'dart:ui';
 
@@ -12,7 +13,6 @@ class PosAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String businessName;
   final String cashierName;
   final String invoiceNumber;
-  final DateTime now;
   final String saleTypeLabel;
   final String? selectedTableName;
   final String? selectedCustomerName;
@@ -51,7 +51,6 @@ class PosAppBar extends StatelessWidget implements PreferredSizeWidget {
     required this.businessName,
     required this.cashierName,
     required this.invoiceNumber,
-    required this.now,
     required this.saleTypeLabel,
     this.selectedTableName,
     required this.hasCartItems,
@@ -165,14 +164,14 @@ class PosAppBar extends StatelessWidget implements PreferredSizeWidget {
                       SizedBox(width: 8.sc),
                       Container(width: 1.sc, height: 8.sc, color: Colors.white12),
                       SizedBox(width: 8.sc),
-                      Text(DateFormat('dd/MM/yy HH:mm:ss').format(now),
-                          style: TextStyle(
-                              fontSize: 9.sp,
-                              color: Colors.white.withOpacity(0.5),
-                              fontWeight: FontWeight.bold,
-                              fontFeatures: const [
-                                FontFeature.tabularFigures()
-                              ])),
+                      Container(width: 1.sc, height: 8.sc, color: Colors.white12),
+                      SizedBox(width: 8.sc),
+                      DigitalClock(
+                        style: TextStyle(
+                            fontSize: 9.sp,
+                            color: Colors.white.withOpacity(0.5),
+                            fontWeight: FontWeight.bold),
+                      ),
                     ],
                   ),
                 ),

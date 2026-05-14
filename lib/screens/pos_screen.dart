@@ -95,9 +95,7 @@ class _PosScreenState extends State<PosScreen> {
   int _pax = 0;
   
   // UI Interaction
-  Timer? _timer;
   Timer? _marqueeTimer;
-  DateTime _now = DateTime.now();
   final ScrollController _headerScrollController = ScrollController();
   final ScrollController _actionsScrollController = ScrollController();
   final FocusNode _scanFocusNode = FocusNode();
@@ -109,6 +107,7 @@ class _PosScreenState extends State<PosScreen> {
   bool _isPrinting = false;
   String _syncStatus = '';
   bool _isBlockedByAttendance = false;
+  late SharedPreferences _prefs;
 
   
   // Preferences
@@ -188,7 +187,6 @@ class _PosScreenState extends State<PosScreen> {
     });
     
     _initPrinter();
-    _startClock();
     _startMarquees();
   }
   
@@ -213,8 +211,6 @@ class _PosScreenState extends State<PosScreen> {
   void dispose() {
     _cartController.removeListener(_onCartChanged);
     _scanFocusNode.removeListener(_onScanFocusChange);
-    SharedPreferences.getInstance().then((p) => p.reload());
-    _timer?.cancel();
     _marqueeTimer?.cancel();
     _headerScrollController.dispose();
     _actionsScrollController.dispose();
@@ -307,52 +303,52 @@ class _PosScreenState extends State<PosScreen> {
   }
 
   Future<void> _initPrefs() async {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.reload();
+      _prefs = await SharedPreferences.getInstance();
+      await _prefs.reload();
       
       setState(() {
           _businessInfo = {
-                'name': prefs.getString('business_name') ?? 'DonaPOS',
-                'address': prefs.getString('business_address') ?? 'Kalideres, Jakarta Barat',
-                'mobile': prefs.getString('business_mobile') ?? '081219752227',
-                'lbl_subtotal': prefs.getString('lbl_subtotal') ?? 'Subtotal',
-                'lbl_discount': prefs.getString('lbl_discount') ?? 'Diskon',
-                'lbl_tax': prefs.getString('lbl_tax') ?? 'Tax',
-                'lbl_total': prefs.getString('lbl_total') ?? 'TOTAL',
-                'lbl_return': prefs.getString('lbl_return') ?? 'Kembalian',
-                'footer_text': prefs.getString('footer_text') ?? 'Terima Kasih\nSelamat Menikmati',
-                'invoice_prefix': prefs.getString('invoice_prefix') ?? 'MBL',
-                'logo_path': prefs.getString('logo_path') ?? '',
+                'name': _prefs.getString('business_name') ?? 'DonaPOS',
+                'address': _prefs.getString('business_address') ?? 'Kalideres, Jakarta Barat',
+                'mobile': _prefs.getString('business_mobile') ?? '081219752227',
+                'lbl_subtotal': _prefs.getString('lbl_subtotal') ?? 'Subtotal',
+                'lbl_discount': _prefs.getString('lbl_discount') ?? 'Diskon',
+                'lbl_tax': _prefs.getString('lbl_tax') ?? 'Tax',
+                'lbl_total': _prefs.getString('lbl_total') ?? 'TOTAL',
+                'lbl_return': _prefs.getString('lbl_return') ?? 'Kembalian',
+                'footer_text': _prefs.getString('footer_text') ?? 'Terima Kasih\nSelamat Menikmati',
+                'invoice_prefix': _prefs.getString('invoice_prefix') ?? 'MBL',
+                'logo_path': _prefs.getString('logo_path') ?? '',
           };
-          _cashierName = prefs.getString('last_user_name') ?? 'Admin';
-          _currentUserId = prefs.getInt('last_user_id') ?? 0;
-          _roundingEnabled = prefs.getBool('rounding_enabled') ?? false;
-          _roundingIncrement = prefs.getBool('rounding_enabled') as bool? ?? false ? prefs.getInt('rounding_increment') ?? 100 : 100; // wait, let's keep it simple
-          _taxEnabled = prefs.getBool('tax_enabled') ?? false;
-          _isLogoEnabled = prefs.getBool('is_logo_enabled') ?? true;
-          _printHoldReceiptEnabled = prefs.getBool('print_hold_receipt_enabled') ?? false;
-          _paperSize = prefs.getInt('printer_paper_size') ?? 58;
-          _invoiceStartIndex = prefs.getInt('invoice_start_index') ?? 0;
-          _showAppVersion = prefs.getBool('show_report_app_version') ?? true;
-          _calculatorEnabled = prefs.getBool('show_calculator') ?? true;
-          _animProductEnabled = prefs.getBool('anim_product_enabled') ?? false;
-          _animMenuEnabled = prefs.getBool('anim_menu_enabled') ?? false;
-          _autoBackupEnabled = prefs.getBool('auto_backup_enabled') ?? false;
-          _duplicatePrintEnabled = prefs.getBool('duplicate_print_enabled') ?? false;
-          _isDemoMode = prefs.getBool('is_demo_mode') ?? false;
-          GlobalSettings.soundEnabled = prefs.getBool('sound_enabled') ?? false;
-          _kotEnabled = prefs.getBool('kitchen_printer_enabled') ?? false;
-          _kotType = prefs.getString('kitchen_printer_type') ?? 'bluetooth';
-          _kotAddress = prefs.getString('kitchen_printer_address') ?? '';
-          _kotAlias = prefs.getString('kitchen_printer_alias') ?? 'PRINTER DAPUR';
-          _secondScreenEnabled = prefs.getBool('second_screen_enabled') ?? false;
-          _showBillButton = prefs.getBool('show_bill_button') ?? false;
-          _showKitchenButton = prefs.getBool('show_kitchen_button') ?? false; // Default OFF
-          _showDiscountButton = prefs.getBool('show_discount_button') ?? false;
-          _attendanceRequired = prefs.getBool('attendance_required') ?? true;
-          _askCustomerNameEnabled = prefs.getBool('ask_customer_name_enabled') ?? true;
-          _autoPayAfterKot = prefs.getBool('auto_pay_after_kot') ?? true;
-          _isAdmin = prefs.getBool('last_user_is_admin') ?? false;
+          _cashierName = _prefs.getString('last_user_name') ?? 'Admin';
+          _currentUserId = _prefs.getInt('last_user_id') ?? 0;
+          _roundingEnabled = _prefs.getBool('rounding_enabled') ?? false;
+          _roundingIncrement = _prefs.getBool('rounding_enabled') as bool? ?? false ? _prefs.getInt('rounding_increment') ?? 100 : 100; 
+          _taxEnabled = _prefs.getBool('tax_enabled') ?? false;
+          _isLogoEnabled = _prefs.getBool('is_logo_enabled') ?? true;
+          _printHoldReceiptEnabled = _prefs.getBool('print_hold_receipt_enabled') ?? false;
+          _paperSize = _prefs.getInt('printer_paper_size') ?? 58;
+          _invoiceStartIndex = _prefs.getInt('invoice_start_index') ?? 0;
+          _showAppVersion = _prefs.getBool('show_report_app_version') ?? true;
+          _calculatorEnabled = _prefs.getBool('show_calculator') ?? true;
+          _animProductEnabled = _prefs.getBool('anim_product_enabled') ?? false;
+          _animMenuEnabled = _prefs.getBool('anim_menu_enabled') ?? false;
+          _autoBackupEnabled = _prefs.getBool('auto_backup_enabled') ?? false;
+          _duplicatePrintEnabled = _prefs.getBool('duplicate_print_enabled') ?? false;
+          _isDemoMode = _prefs.getBool('is_demo_mode') ?? false;
+          GlobalSettings.soundEnabled = _prefs.getBool('sound_enabled') ?? false;
+          _kotEnabled = _prefs.getBool('kitchen_printer_enabled') ?? false;
+          _kotType = _prefs.getString('kitchen_printer_type') ?? 'bluetooth';
+          _kotAddress = _prefs.getString('kitchen_printer_address') ?? '';
+          _kotAlias = _prefs.getString('kitchen_printer_alias') ?? 'PRINTER DAPUR';
+          _secondScreenEnabled = _prefs.getBool('second_screen_enabled') ?? false;
+          _showBillButton = _prefs.getBool('show_bill_button') ?? false;
+          _showKitchenButton = _prefs.getBool('show_kitchen_button') ?? false; 
+          _showDiscountButton = _prefs.getBool('show_discount_button') ?? false;
+          _attendanceRequired = _prefs.getBool('attendance_required') ?? true;
+          _askCustomerNameEnabled = _prefs.getBool('ask_customer_name_enabled') ?? true;
+          _autoPayAfterKot = _prefs.getBool('auto_pay_after_kot') ?? true;
+          _isAdmin = _prefs.getBool('last_user_is_admin') ?? false;
       });
 
       final isReg = await _apiService.isRegistered();
@@ -392,8 +388,14 @@ class _PosScreenState extends State<PosScreen> {
   // --- UI BUILDING ---
   @override
   Widget build(BuildContext context) {
-    return Consumer<PosProvider>(
-      builder: (context, pos, child) {
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        _showExitConfirmation();
+      },
+      child: Consumer<PosProvider>(
+        builder: (context, pos, child) {
         return Scaffold(
           backgroundColor: MetroColors.background,
           body: Stack(
@@ -421,7 +423,6 @@ class _PosScreenState extends State<PosScreen> {
                             businessName: _businessInfo['name'] ?? 'Donapos',
                             cashierName: _cashierName,
                             invoiceNumber: _getInvoiceNumber(isDraft: true),
-                            now: _now,
                             saleTypeLabel: _getTypeLabel(pos.selectedPriceGroupId),
                             selectedTableName: _selectedTable != null ? '${_selectedTable!.name} (${_pax > 0 ? "$_pax P" : "0 P"})' : null,
                             hasCartItems: _cartController.hasItems,
@@ -587,6 +588,19 @@ class _PosScreenState extends State<PosScreen> {
           )
         );
       }
+    );
+  }
+
+  void _showExitConfirmation() {
+    showDialog(
+      context: context,
+      builder: (ctx) => ConfirmDialog(
+        title: 'KELUAR APLIKASI',
+        message: 'Apakah Anda yakin ingin keluar dari DonaPOS? Pastikan semua transaksi sudah tersimpan.',
+        confirmLabel: 'KELUAR SEKARANG',
+        cancelLabel: 'BATAL',
+        onConfirm: () => exit(0),
+      ),
     );
   }
 
@@ -1327,11 +1341,8 @@ class _PosScreenState extends State<PosScreen> {
             builder: (_) => AttendanceDialog(userId: _currentUserId, username: _cashierName)
         );
         if (res == true) {
-             if (Platform.isAndroid || Platform.isIOS) {
-                SystemNavigator.pop();
-             } else {
-                exit(0);
-             }
+             // Gunakan exit(0) langsung agar tidak ada warning Android
+             exit(0);
         }
         break;
       case 'label_printer':
@@ -1590,11 +1601,8 @@ class _PosScreenState extends State<PosScreen> {
 
           if (mounted) {
               if (action == 'exit') {
-                  if (Platform.isAndroid || Platform.isIOS) {
-                      SystemNavigator.pop();
-                  } else {
-                      exit(0);
-                  }
+                  // Gunakan exit(0) langsung agar tidak ada warning Android
+                  exit(0);
               }
           }
       }
@@ -2389,8 +2397,8 @@ class _PosScreenState extends State<PosScreen> {
           await showDialog(
               context: context,
               barrierDismissible: false,
-              builder: (ctx) => WillPopScope(
-                  onWillPop: () async => false, // Prevent back button
+              builder: (ctx) => PopScope(
+                  canPop: false, // Prevent back button
                   child: Dialog(
                       backgroundColor: Colors.transparent,
                       insetPadding: EdgeInsets.symmetric(horizontal: 100.sc),
@@ -2474,10 +2482,9 @@ class _PosScreenState extends State<PosScreen> {
   }
   
   void _startClock() {
-     _timer = Timer.periodic(const Duration(seconds: 1), (t) {
-         if (mounted) setState(() => _now = DateTime.now());
-         if (t.tick % 60 == 0) _checkAttendance();
-     });
+    _marqueeTimer = Timer.periodic(const Duration(minutes: 1), (t) {
+      if (mounted) _checkAttendance();
+    });
   }
   
   void _startMarquees() {

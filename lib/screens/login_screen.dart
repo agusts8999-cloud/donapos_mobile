@@ -38,6 +38,7 @@ class _LoginScreenState extends State<LoginScreen> {
   AppUser? _selectedUser;
   late bool _isSetupMode;
   bool _isDemoMode = false;
+  bool _isFirstTimeLogin = false;
 
   String _businessName = '';
   String _locationName = '';
@@ -55,6 +56,15 @@ class _LoginScreenState extends State<LoginScreen> {
     _loadInfo();
     _loadSystemStatus();
     _loadDemoStatus();
+    _checkFirstTime();
+  }
+
+  Future<void> _checkFirstTime() async {
+    final prefs = await SharedPreferences.getInstance();
+    final hasLoggedBefore = prefs.getBool('has_logged_in_before') ?? false;
+    if (!hasLoggedBefore && mounted) {
+      setState(() => _isFirstTimeLogin = true);
+    }
   }
 
   Future<void> _loadDemoStatus() async {
@@ -429,6 +439,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   await p.setInt('last_user_id', _selectedUser!.id);
                                   await p.setString('last_user_name', _selectedUser!.firstName);
                                   await p.setBool('last_user_is_admin', _selectedUser!.isAdmin == 1);
+                                  await p.setBool('has_logged_in_before', true);
                               },
                           )
                       );
@@ -440,7 +451,11 @@ class _LoginScreenState extends State<LoginScreen> {
                   await prefs.setInt('last_user_id', _selectedUser!.id);
                   await prefs.setString('last_user_name', _selectedUser!.firstName);
                   await prefs.setBool('last_user_is_admin', _selectedUser!.isAdmin == 1);
-                  if (mounted) _navToPos();
+                  await prefs.setBool('has_logged_in_before', true);
+                  if (mounted) {
+                    setState(() => _isFirstTimeLogin = false);
+                    _navToPos();
+                  }
               }
           } catch (e) {
               if (mounted) {
@@ -809,6 +824,34 @@ class _LoginScreenState extends State<LoginScreen> {
                               children: [
                                   MetroSectionTitle(title: lp.translate('login_as_staff')),
                                   Text(lp.translate('choose_your_username'), style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.w900, color: MetroColors.text, letterSpacing: -1.sc)),
+                                  SizedBox(height: 8.sc),
+                                  // Banner untuk user yang baru selesai aktivasi
+                                  if (_isFirstTimeLogin)
+                                    Container(
+                                      padding: EdgeInsets.all(12.sc),
+                                      margin: EdgeInsets.only(bottom: 12.sc),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF4CAF50).withOpacity(0.1),
+                                        border: Border.all(color: const Color(0xFF4CAF50).withOpacity(0.3)),
+                                        borderRadius: BorderRadius.circular(8.sc),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          Icon(Icons.check_circle_rounded, color: const Color(0xFF4CAF50), size: 24.sc),
+                                          SizedBox(width: 12.sc),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Text('PERANGKAT SIAP!', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 11.sp, color: const Color(0xFF2E7D32), letterSpacing: 1.sc)),
+                                                SizedBox(height: 2.sc),
+                                                Text('Pilih nama Anda di bawah, lalu masukkan PIN dari admin.', style: TextStyle(fontSize: 10.sp, color: Colors.black54, fontWeight: FontWeight.w600)),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
                                   SizedBox(height: 16.sc),
                                   Expanded(
                                       child: Builder(
@@ -923,13 +966,46 @@ class _LoginScreenState extends State<LoginScreen> {
                                                 crossAxisAlignment: CrossAxisAlignment.start,
                                                 children: [
                                                     const SizedBox(height: 32),
-                                                     const Text('AUTHENTICATION', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Colors.white70, letterSpacing: 2)),
+                                                     Text(
+                                                       _isFirstTimeLogin ? 'PERTAMA KALI MASUK' : 'AUTHENTICATION',
+                                                       style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: _isFirstTimeLogin ? Colors.amber : Colors.white70, letterSpacing: 2),
+                                                     ),
                                                     const SizedBox(height: 8),
-                                                    Text(lp.translate('welcome_back'), style: const TextStyle(fontSize: 21.6, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -1)),
+                                                    Text(_isFirstTimeLogin ? 'HALO,' : lp.translate('welcome_back'), style: const TextStyle(fontSize: 21.6, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -1)),
                                                     Text(_selectedUser!.firstName.toUpperCase(), style: const TextStyle(fontSize: 43.2, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 2)),
-                                                    const SizedBox(height: 64),
-                                                    Text("${lp.translate('enter_pin_staff')} (${lp.translate('contact_vendor')})", style: const TextStyle(color: Colors.white38, fontSize: 9.9, fontWeight: FontWeight.bold, height: 1.5)),
-                                                    const SizedBox(height: 48),
+                                                    const SizedBox(height: 32),
+                                                    // Info PIN yang JELAS
+                                                    Container(
+                                                      padding: const EdgeInsets.all(16),
+                                                      decoration: BoxDecoration(
+                                                        color: _isFirstTimeLogin ? Colors.amber.withOpacity(0.15) : Colors.white.withOpacity(0.08),
+                                                        borderRadius: BorderRadius.circular(8),
+                                                        border: Border.all(color: _isFirstTimeLogin ? Colors.amber.withOpacity(0.4) : Colors.white12),
+                                                      ),
+                                                      child: Column(
+                                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                                        children: [
+                                                          Row(
+                                                            children: [
+                                                              Icon(_isFirstTimeLogin ? Icons.info_rounded : Icons.vpn_key_rounded, color: _isFirstTimeLogin ? Colors.amber : Colors.white54, size: 18),
+                                                              const SizedBox(width: 8),
+                                                              Text(
+                                                                _isFirstTimeLogin ? 'CARA MENDAPATKAN PIN' : 'MASUKKAN PIN ANDA',
+                                                                style: TextStyle(fontWeight: FontWeight.w900, fontSize: 10, color: _isFirstTimeLogin ? Colors.amber : Colors.white70, letterSpacing: 1),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                          const SizedBox(height: 8),
+                                                          Text(
+                                                            _isFirstTimeLogin
+                                                              ? '• PIN diatur oleh Admin / Pemilik Bisnis\n• Hubungi admin Anda untuk mendapatkan PIN\n• PIN biasanya 4-6 digit angka'
+                                                              : lp.translate('enter_pin_staff'),
+                                                            style: TextStyle(color: _isFirstTimeLogin ? Colors.white.withOpacity(0.85) : Colors.white38, fontSize: 10, fontWeight: FontWeight.w600, height: 1.6),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                    const SizedBox(height: 32),
                                                     MetroButton(
                                                       label: lp.translate('back_to_user_list'), 
                                                       isSecondary: true, 

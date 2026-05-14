@@ -43,7 +43,23 @@ class BackupService {
       if (!dbFile.existsSync()) return;
 
       // Use a consistent folder for auto backups
-      final dir = Directory('/storage/emulated/0/DonaPOS_Backups/Auto');
+      // Use a consistent folder for auto backups
+      Directory? dir;
+      if (Platform.isAndroid) {
+          // Try external storage first for Android
+          final external = await getExternalStorageDirectory();
+          if (external != null) {
+              dir = Directory(p.join(external.path, 'AutoBackups'));
+          } else {
+              final docs = await getApplicationDocumentsDirectory();
+              dir = Directory(p.join(docs.path, 'DonaPOS_Backups', 'Auto'));
+          }
+      } else {
+          // Windows / Desktop
+          final docs = await getApplicationDocumentsDirectory();
+          dir = Directory(p.join(docs.path, 'DonaPOS_Backups', 'Auto'));
+      }
+
       if (!dir.existsSync()) {
         await dir.create(recursive: true);
       }

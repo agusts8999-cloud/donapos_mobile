@@ -5,6 +5,7 @@ import 'package:flutter_presentation_display/flutter_presentation_display.dart';
 import 'package:donapos_mobile/api_service.dart';
 import 'package:donapos_mobile/models/customer_display_setting.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:donapos_mobile/widgets/donapos_image.dart';
 
 class CustomerDisplayScreen extends StatefulWidget {
   const CustomerDisplayScreen({super.key});
@@ -215,7 +216,7 @@ class _CustomerDisplayScreenState extends State<CustomerDisplayScreen> {
                     decoration: BoxDecoration(
                       color: Colors.white,
                       image: DecorationImage(
-                          image: NetworkImage(imageUrl),
+                          image: DonaposImage.provider(imageUrl),
                           fit: BoxFit.cover
                       )
                     ),

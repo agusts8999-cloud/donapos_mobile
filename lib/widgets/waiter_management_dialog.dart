@@ -4,6 +4,7 @@ import 'package:donapos_mobile/models.dart';
 import 'package:donapos_mobile/design_system.dart';
 import 'package:donapos_mobile/widgets/glass_dialog.dart';
 import 'package:donapos_mobile/utils_ui.dart';
+import 'package:donapos_mobile/widgets/donapos_image.dart';
 
 class WaiterManagementDialog extends StatefulWidget {
   const WaiterManagementDialog({super.key});
@@ -87,7 +88,7 @@ class _WaiterManagementDialogState extends State<WaiterManagementDialog> {
                             leading: CircleAvatar(
                               backgroundColor: Colors.grey.shade200,
                               backgroundImage: (user.profileImage != null && user.profileImage!.isNotEmpty)
-                                  ? NetworkImage(user.profileImage!)
+                                  ? DonaposImage.provider(user.profileImage!)
                                   : null,
                               child: (user.profileImage == null || user.profileImage!.isEmpty)
                                   ? const Icon(Icons.person, color: Colors.grey)

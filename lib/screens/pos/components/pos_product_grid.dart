@@ -9,6 +9,7 @@ import 'package:donapos_mobile/db_helper.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:donapos_mobile/api_service.dart';
 import 'package:donapos_mobile/utils_scaler.dart';
+import 'package:donapos_mobile/widgets/donapos_image.dart';
 
 class PosProductGrid extends StatefulWidget {
   final List<Product> products;
@@ -190,10 +191,10 @@ class _PosProductGridState extends State<PosProductGrid> {
                   margin: EdgeInsets.only(bottom: 20.sc),
                   decoration: BoxDecoration(
                     border: Border.all(color: Colors.black12, width: 1.sc),
-                    image: DecorationImage(
-                    image: _getProductImageProvider(p),
-                    fit: BoxFit.cover
                   ),
+                  child: DonaposImage(
+                    imageUrl: _getAbsoluteUrl(p.imageUrl),
+                    fit: BoxFit.cover,
                   ),
                 ),
               Text(p.name.toUpperCase(), style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w900, letterSpacing: 1.sc)),
@@ -412,18 +413,21 @@ class _PosProductGridState extends State<PosProductGrid> {
                 child: Container(
                   decoration: BoxDecoration(
                     color: tileColor,
-                    image: hasImage
-                        ? DecorationImage(
-                            image: _getProductImageProvider(p),
-                            fit: BoxFit.cover,
-                            opacity: 0.9) // Increased opacity for clarity
-                        : null,
                     border: qty > 0
                         ? Border.all(color: MetroColors.primary, width: 4.sc)
                         : null,
                   ),
-                  child: Container(
-                    decoration: BoxDecoration(
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      if (hasImage)
+                        DonaposImage(
+                          imageUrl: _getAbsoluteUrl(p.imageUrl),
+                          fit: BoxFit.cover,
+                          opacity: 0.9,
+                        ),
+                      Container(
+                        decoration: BoxDecoration(
                       gradient: hasImage ? LinearGradient(
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,

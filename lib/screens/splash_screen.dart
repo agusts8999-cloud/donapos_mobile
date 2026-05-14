@@ -11,6 +11,7 @@ import 'package:donapos_mobile/db_helper.dart';
 import 'package:donapos_mobile/widgets/database_migration_dialog.dart';
 import 'package:donapos_mobile/sync_service.dart';
 import 'package:donapos_mobile/utils_scaler.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 // Jenis error koneksi yang lebih spesifik
 enum _ErrorType { noInternet, serverUnreachable, notConfigured, other }
@@ -26,6 +27,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   double _progress = 0.05;
   String _status = 'MEMULAI SISTEM...';
   bool _failed = false;
+  bool _isFirstTime = false;
   _ErrorType _errorType = _ErrorType.other;
   final ApiService _apiService = ApiService();
   int _retryCount = 0;
@@ -105,8 +107,8 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
       final baseUrl = await _apiService.getBaseUrl();
       if (baseUrl.isEmpty) {
-        _retryCount++;
-        _setError(_ErrorType.notConfigured, 'SERVER BELUM DIKONFIGURASI\nTEKAN "KONFIGURASI SERVER" DI BAWAH');
+        // User baru: tampilkan Welcome Screen, bukan error
+        if (mounted) setState(() => _isFirstTime = true);
         return;
       }
 
@@ -177,6 +179,21 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginScreen()));
   }
 
+  Future<void> _startDemoMode() async {
+    setState(() { _isFirstTime = false; _status = 'MEMPERSIAPKAN DEMO...'; });
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('is_demo_mode', true);
+      await DatabaseHelper.instance.restoreDemoSnapshot();
+      if (mounted) _navNext();
+    } catch (e) {
+      if (mounted) {
+        showAppModal(context, title: 'GAGAL', message: 'Tidak dapat memulai demo: $e', isError: true);
+        setState(() => _isFirstTime = true);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -208,7 +225,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                         children: [
                           _buildLogo(),
                           SizedBox(height: 56.sc),
-                          _buildStatusSection(),
+                          _isFirstTime ? _buildWelcomeSection() : _buildStatusSection(),
                         ],
                       ),
                     ),
@@ -225,6 +242,140 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildWelcomeSection() {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        // Welcome message
+        Container(
+          padding: EdgeInsets.symmetric(horizontal: 24.sc, vertical: 16.sc),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.08),
+            borderRadius: BorderRadius.circular(12.sc),
+            border: Border.all(color: Colors.white.withOpacity(0.15)),
+          ),
+          child: Column(
+            children: [
+              Icon(Icons.waving_hand_rounded, color: Colors.amber, size: 32.sc),
+              SizedBox(height: 12.sc),
+              Text(
+                'SELAMAT DATANG!',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 2.sc,
+                ),
+              ),
+              SizedBox(height: 8.sc),
+              Text(
+                'Sistem Point of Sale untuk\nRestoran, Kafe & F&B',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w600,
+                  height: 1.5,
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        SizedBox(height: 32.sc),
+
+        // Primary CTA: Aktivasi
+        SizedBox(
+          width: 280.sc,
+          child: ElevatedButton.icon(
+            icon: Icon(Icons.rocket_launch_rounded, size: 22.sc),
+            label: Padding(
+              padding: EdgeInsets.symmetric(vertical: 16.sc),
+              child: Column(
+                children: [
+                  Text('AKTIVASI PERANGKAT', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14.sp, letterSpacing: 1.sc)),
+                  SizedBox(height: 2.sc),
+                  Text('Hubungkan ke server bisnis Anda', style: TextStyle(fontSize: 9.sp, fontWeight: FontWeight.w500, color: Colors.white70)),
+                ],
+              ),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: MetroColors.primary,
+              elevation: 8,
+              shadowColor: Colors.black38,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.sc)),
+            ),
+            onPressed: () async {
+              final res = await Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ConfigScreen()),
+              );
+              if (res == true && mounted) {
+                _retryCount = 0;
+                setState(() => _isFirstTime = false);
+                _startCheck();
+              }
+            },
+          ),
+        ),
+
+        SizedBox(height: 16.sc),
+
+        // Secondary CTA: Demo
+        SizedBox(
+          width: 280.sc,
+          child: OutlinedButton.icon(
+            icon: Icon(Icons.play_circle_outline_rounded, size: 22.sc),
+            label: Padding(
+              padding: EdgeInsets.symmetric(vertical: 14.sc),
+              child: Column(
+                children: [
+                  Text('COBA MODE DEMO', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13.sp, letterSpacing: 1.sc)),
+                  SizedBox(height: 2.sc),
+                  Text('Jelajahi fitur tanpa setup', style: TextStyle(fontSize: 9.sp, fontWeight: FontWeight.w500)),
+                ],
+              ),
+            ),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: Colors.white,
+              side: BorderSide(color: Colors.white38, width: 1.5.sc),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.sc)),
+            ),
+            onPressed: _startDemoMode,
+          ),
+        ),
+
+        SizedBox(height: 24.sc),
+
+        // Tertiary: Manual setup link
+        TextButton(
+          onPressed: () {
+            // Fallback: show the old error flow for advanced users
+            setState(() {
+              _isFirstTime = false;
+              _retryCount++;
+              _setError(_ErrorType.notConfigured, 'SERVER BELUM DIKONFIGURASI\nGUNAKAN MENU DI BAWAH UNTUK SETUP MANUAL');
+            });
+          },
+          child: Text(
+            'SETUP MANUAL / LANJUT OFFLINE',
+            style: TextStyle(
+              color: Colors.white38,
+              fontSize: 10.sp,
+              fontWeight: FontWeight.w700,
+              decoration: TextDecoration.underline,
+              decorationColor: Colors.white38,
+              letterSpacing: 1.sc,
+            ),
+          ),
+        ),
+      ],
     );
   }
 
