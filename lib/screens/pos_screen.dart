@@ -1044,12 +1044,25 @@ class _PosScreenState extends State<PosScreen> {
                               labelText: 'Catatan / Nama Pelanggan',
                               contentPadding: EdgeInsets.symmetric(vertical: 20),
                           ),
-                      )
+                      ),
+                      const SizedBox(height: 12),
                   ],
               ),
+              actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
               actions: [
-                  TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('BATAL')),
-                  ElevatedButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('SIMPAN HOLD')),
+                  TextButton(
+                    onPressed: () => Navigator.pop(ctx, false), 
+                    child: const Text('BATAL', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold))
+                  ),
+                  ElevatedButton(
+                    onPressed: () => Navigator.pop(ctx, true), 
+                    style: ElevatedButton.styleFrom(
+                        backgroundColor: MetroColors.primary,
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4))
+                    ),
+                    child: const Text('SIMPAN HOLD', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold))
+                  ),
               ],
           )
       );
