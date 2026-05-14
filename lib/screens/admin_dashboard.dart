@@ -23,6 +23,7 @@ import 'package:donapos_mobile/screens/admin/customer_display_settings_screen.da
 import 'package:donapos_mobile/screens/admin/sd_card_backup_screen.dart';
 import 'package:donapos_mobile/widgets/waiter_management_dialog.dart';
 import 'package:donapos_mobile/widgets/product_label_settings_dialog.dart';
+import 'package:donapos_mobile/screens/admin/qr_settings_dialog.dart';
 import 'package:donapos_mobile/widgets/sync_progress_dialog.dart';
 import 'package:donapos_mobile/widgets/sync_center_dialog.dart';
 import 'package:donapos_mobile/sync_helper.dart';
@@ -693,6 +694,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
               MetroTile(label: lp.translate('menu_management'), icon: Icons.price_change, color: Colors.orange, isHorizontal: true, onTap: () => showDialog(context: context, builder: (_) => const ProductManagerDialog())),
               MetroTile(label: 'LAYAR PELANGGAN', icon: Icons.monitor, color: Colors.purple, isHorizontal: true, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CustomerDisplaySettingsScreen()))),
               MetroTile(label: 'MANAJEMEN WAITER', icon: Icons.badge, color: Colors.cyan, isHorizontal: true, onTap: () => showDialog(context: context, builder: (_) => const WaiterManagementDialog())),
+              MetroTile(label: 'PENGATURAN QR LOGIN', icon: Icons.qr_code_2, color: Colors.indigo, isHorizontal: true, onTap: () => showDialog(context: context, builder: (_) => const QrSettingsDialog())),
             ],
           );
         }),

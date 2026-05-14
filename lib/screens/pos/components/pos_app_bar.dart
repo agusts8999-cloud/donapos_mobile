@@ -182,7 +182,7 @@ class PosAppBar extends StatelessWidget implements PreferredSizeWidget {
       ),
       actions: [
         SizedBox(
-          width: isLandscape ? 500.sc : 320.sc,
+          width: MediaQuery.of(context).size.width * 0.66,
           child: Listener(
             onPointerDown: onActionsPointerDown,
             onPointerUp: onActionsPointerUp,
@@ -234,10 +234,10 @@ class PosAppBar extends StatelessWidget implements PreferredSizeWidget {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 8.sc, horizontal: 4.sc),
       child: Material(
-        color: backgroundColor ?? (isFeatured ? Colors.white : Colors.black12),
+        color: backgroundColor ?? (isFeatured ? Colors.white : Colors.black45),
         shape: RoundedRectangleBorder(
           side: BorderSide(
-              color: isFeatured ? Colors.transparent : Colors.white30, width: 1.2.sc),
+              color: isFeatured ? Colors.transparent : Colors.white38, width: 1.2.sc),
           borderRadius: BorderRadius.zero,
         ),
         child: InkWell(

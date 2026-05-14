@@ -43,6 +43,8 @@ class _LoginScreenState extends State<LoginScreen> {
   String _businessName = '';
   String _locationName = '';
   Map<String, dynamic> _systemStatus = {};
+  String _qrMainUrl = 'https://donapos.com';
+  String _qrBackofficeUrl = 'https://donapos.serverzone.web.id';
 
   // FIX: Persistent FocusNode
   late FocusNode _pinFocusNode;
@@ -52,11 +54,22 @@ class _LoginScreenState extends State<LoginScreen> {
     super.initState();
     _isSetupMode = widget.showAdminLogin;
     _pinFocusNode = FocusNode();
+    _loadQrSettings();
     _loadUsers();
     _loadInfo();
     _loadSystemStatus();
     _loadDemoStatus();
     _checkFirstTime();
+  }
+
+  Future<void> _loadQrSettings() async {
+      final prefs = await SharedPreferences.getInstance();
+      if (mounted) {
+          setState(() {
+              _qrMainUrl = prefs.getString('qr_main_url') ?? 'https://donapos.com';
+              _qrBackofficeUrl = prefs.getString('qr_backoffice_url') ?? 'https://donapos.serverzone.web.id';
+          });
+      }
   }
 
   Future<void> _checkFirstTime() async {
@@ -507,9 +520,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                        _buildQrItem('WEBSITE UTAMA', 'https://donapos.com', size: 80.sc),
+                        _buildQrItem('WEBSITE UTAMA', _qrMainUrl, size: 80.sc),
                         SizedBox(width: 24.sc),
-                        _buildQrItem('BACK OFFICE', 'https://donapos.serverzone.web.id', size: 80.sc),
+                        _buildQrItem('BACK OFFICE', _qrBackofficeUrl, size: 80.sc),
                     ],
                   ),
 
@@ -663,9 +676,9 @@ class _LoginScreenState extends State<LoginScreen> {
                             Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                    _buildQrItem('WEBSITE', 'https://donapos.com', size: 60),
+                                    _buildQrItem('WEBSITE', _qrMainUrl, size: 60),
                                     const SizedBox(width: 32),
-                                    _buildQrItem('BACK OFFICE', 'https://donapos.serverzone.web.id', size: 60),
+                                    _buildQrItem('BACK OFFICE', _qrBackofficeUrl, size: 60),
                                 ],
                             ),
                           ],

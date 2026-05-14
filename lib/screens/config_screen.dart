@@ -37,6 +37,7 @@ class _ConfigScreenState extends State<ConfigScreen> {
   bool _isDemoMode = false;
   bool _hasCustomDemo = false;
   bool _useCurrentAsDemo = false;
+  bool _isActivated = false;
   final List<Map<String, dynamic>> _logs = []; // Activation Log
   String _serverMode = 'server1';
 
@@ -80,6 +81,7 @@ class _ConfigScreenState extends State<ConfigScreen> {
       _isLoading = false;
       _isDemoMode = prefs.getBool('is_demo_mode') ?? false;
       _hasCustomDemo = hasCustom;
+      _isActivated = _clientIdController.text.isNotEmpty;
     });
   }
 
@@ -905,7 +907,30 @@ class _ConfigScreenState extends State<ConfigScreen> {
           const SizedBox(height: 32),
 
           // ROW 2: ACTIVATION
-          Container(
+          if (_isActivated) 
+            Container(
+              padding: const EdgeInsets.all(24),
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 20, offset: const Offset(0, 8))],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const Icon(Icons.lock, size: 64, color: Colors.green),
+                  const SizedBox(height: 16),
+                  const Text('PERANGKAT TELAH DIAKTIVASI', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: MetroColors.primary)),
+                  const SizedBox(height: 8),
+                  const Text('Perangkat ini sudah terhubung ke server secara aman. Untuk mencegah kehilangan data akibat perubahan konfigurasi yang tidak disengaja, fitur aktivasi telah dikunci.', textAlign: TextAlign.center, style: TextStyle(color: Colors.black54)),
+                  const SizedBox(height: 24),
+                  const Text('JIKA ANDA INGIN MENGGANTI KONEKSI ATAU MERESET PERANGKAT, HARAP UNINSTALL APLIKASI DAN INSTALL KEMBALI.', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold, color: MetroColors.error)),
+                ],
+              ),
+            )
+          else
+            Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
               color: Colors.white,
