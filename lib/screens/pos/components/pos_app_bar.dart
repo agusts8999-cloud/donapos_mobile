@@ -198,27 +198,28 @@ class PosAppBar extends StatelessWidget implements PreferredSizeWidget {
                     backgroundColor: isScanMode ? MetroColors.error : null
                 ),
                 _buildAppBarAction(Icons.search, lp.translate('search'), onSearchPressed, color: Colors.white),
-                _buildAppBarAction(Icons.shopping_bag, saleTypeLabel,
-                    onSaleTypePressed,
-                    color: MetroColors.accent),
-                _buildAppBarAction(Icons.list_alt, lp.translate('hold'), onHoldListPressed),
+                _buildAppBarAction(Icons.table_restaurant,
+                    selectedTableName?.toUpperCase() ?? lp.translate('table'), onTablePressed),
+                if (kitchenEnabled)
+                  _buildAppBarAction(Icons.restaurant_menu, lp.translate('kitchen'), onKitchenPrintPressed,
+                      isFeatured: true),
+                _buildAppBarAction(Icons.list_alt, lp.translate('hold'), onHoldListPressed,
+                    backgroundColor: Colors.yellow, color: Colors.black, isFeatured: true),
                 _buildAppBarAction(Icons.person,
                     selectedCustomerName?.toUpperCase() ?? lp.translate('customer'), onCustomerPressed,
                     color: Colors.greenAccent),
                 _buildAppBarAction(Icons.badge,
                     selectedWaiterName?.toUpperCase() ?? 'WAITER', onWaiterPressed,
                     color: Colors.cyanAccent),
-                  _buildAppBarAction(Icons.table_restaurant,
-                      selectedTableName?.toUpperCase() ?? lp.translate('table'), onTablePressed),
+                _buildAppBarAction(Icons.shopping_bag, saleTypeLabel,
+                    onSaleTypePressed,
+                    color: MetroColors.accent),
                 if (billEnabled)
                   _buildAppBarAction(Icons.receipt_long, 'BILL', onBillPressed, color: Colors.yellowAccent),
                 if (discountEnabled)
                   _buildAppBarAction(Icons.percent, lp.translate('discount'), onDiscountPressed, color: Colors.orangeAccent),
                 if (calculatorEnabled)
                   _buildAppBarAction(Icons.calculate, 'KALKULATOR', onCalculatorPressed, color: Colors.greenAccent),
-                if (kitchenEnabled)
-                  _buildAppBarAction(Icons.restaurant_menu, lp.translate('kitchen'), onKitchenPrintPressed,
-                      isFeatured: true),
               ],
             ),
           ),

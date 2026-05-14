@@ -858,51 +858,57 @@ class _ConfigScreenState extends State<ConfigScreen> {
           const SizedBox(height: 32),
           
           // ROW 1: DEMO & TRAINING
-          Row(
-            children: [
-              Expanded(
-                child: _buildFeatureCard(
-                  title: 'FITUR DEMO / TRAINING MODE',
-                  subtitle: 'Latihan tanpa terhubung ke server',
-                  icon: Icons.model_training,
-                  color: Colors.orange,
-                  isActive: _isDemoMode,
-                  onTap: () => _toggleDemoMode(!_isDemoMode),
-                  trailing: Switch(
-                      value: _isDemoMode, 
-                      onChanged: _toggleDemoMode,
-                      activeColor: Colors.orange,
-                  ),
-                  bottom: !_isDemoMode ? Row(
-                    children: [
-                        SizedBox(
-                            height: 24,
-                            width: 24,
-                            child: Checkbox(
-                                value: _useCurrentAsDemo, 
-                                activeColor: Colors.orange,
-                                onChanged: (v) => setState(() => _useCurrentAsDemo = v ?? false)
+          AbsorbPointer(
+            absorbing: _isActivated,
+            child: Opacity(
+              opacity: _isActivated ? 0.5 : 1.0,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: _buildFeatureCard(
+                      title: 'FITUR DEMO / TRAINING MODE',
+                      subtitle: 'Latihan tanpa terhubung ke server',
+                      icon: Icons.model_training,
+                      color: Colors.orange,
+                      isActive: _isDemoMode,
+                      onTap: () => _toggleDemoMode(!_isDemoMode),
+                      trailing: Switch(
+                          value: _isDemoMode, 
+                          onChanged: _isActivated ? null : _toggleDemoMode,
+                          activeColor: Colors.orange,
+                      ),
+                      bottom: !_isDemoMode ? Row(
+                        children: [
+                            SizedBox(
+                                height: 24,
+                                width: 24,
+                                child: Checkbox(
+                                    value: _useCurrentAsDemo, 
+                                    activeColor: Colors.orange,
+                                    onChanged: _isActivated ? null : (v) => setState(() => _useCurrentAsDemo = v ?? false)
+                                ),
                             ),
-                        ),
-                        const SizedBox(width: 8),
-                        const Flexible(
-                            child: Text('GUNAKAN DATA SAAT INI', style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.bold, color: Colors.blueGrey))
-                        )
-                    ],
-                  ) : null,
-                ),
+                            const SizedBox(width: 8),
+                            const Flexible(
+                                child: Text('GUNAKAN DATA SAAT INI', style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.bold, color: Colors.blueGrey))
+                            )
+                        ],
+                      ) : null,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildFeatureCard(
+                      title: 'AKTIVASI DATA DEMO',
+                      subtitle: 'Info hubungi vendor',
+                      icon: Icons.auto_awesome,
+                      color: Colors.blue,
+                      onTap: _openDemoWebsite,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: _buildFeatureCard(
-                  title: 'AKTIVASI DATA DEMO',
-                  subtitle: 'Info hubungi vendor',
-                  icon: Icons.auto_awesome,
-                  color: Colors.blue,
-                  onTap: _openDemoWebsite,
-                ),
-              ),
-            ],
+            ),
           ),
           const SizedBox(height: 32),
 
@@ -1058,66 +1064,78 @@ class _ConfigScreenState extends State<ConfigScreen> {
           const SizedBox(height: 32),
 
           // ROW 3: RESET / FINALIZATION
-          Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: MetroColors.error.withOpacity(0.05),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: MetroColors.error.withOpacity(0.1)),
-            ),
-            child: Row(
-              children: [
-                const Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('UPDATE & HAPUS SEMUA DATA', style: TextStyle(fontWeight: FontWeight.w900, color: MetroColors.error, fontSize: 14)),
-                      SizedBox(height: 4),
-                      Text('Tindakan ini akan mereset aplikasi ke kondisi pabrik.', style: TextStyle(fontSize: 12, color: Colors.redAccent)),
-                    ],
-                  ),
+          AbsorbPointer(
+            absorbing: _isActivated,
+            child: Opacity(
+              opacity: _isActivated ? 0.5 : 1.0,
+              child: Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: MetroColors.error.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: MetroColors.error.withOpacity(0.1)),
                 ),
-                ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: MetroColors.error,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                  ),
-                  onPressed: _finalizeSetup,
-                  icon: const Icon(Icons.delete_forever),
-                  label: const Text('RESET TOTAL', style: TextStyle(fontWeight: FontWeight.bold)),
+                child: Row(
+                  children: [
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('UPDATE & HAPUS SEMUA DATA', style: TextStyle(fontWeight: FontWeight.w900, color: MetroColors.error, fontSize: 14)),
+                          SizedBox(height: 4),
+                          Text('Tindakan ini akan mereset aplikasi ke kondisi pabrik.', style: TextStyle(fontSize: 12, color: Colors.redAccent)),
+                        ],
+                      ),
+                    ),
+                    ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: MetroColors.error,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                      ),
+                      onPressed: _isActivated ? null : _finalizeSetup,
+                      icon: const Icon(Icons.delete_forever),
+                      label: const Text('RESET TOTAL', style: TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
 
           const SizedBox(height: 48),
           
           // TECHNICAL INFO (EXPANDABLE)
-          ExpansionTile(
-            title: const Text('INFORMASI TEKNIS SERVER', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: Colors.grey)),
-            children: [
-              Container(
-                padding: const EdgeInsets.all(24),
-                color: Colors.black.withOpacity(0.02),
-                child: Column(
-                  children: [
-                    _buildField('BASE URL', _urlController),
-                    const SizedBox(height: 20),
-                    _buildField('CLIENT ID', _clientIdController),
-                    const SizedBox(height: 20),
-                    _buildField('CLIENT SECRET', _clientSecretController),
-                    const SizedBox(height: 20),
-                    _buildField('LOCATION ID', _locationIdController),
-                    const SizedBox(height: 24),
-                    const Divider(),
-                    const SizedBox(height: 16),
-                    _buildStaticInfo('NAMA BISNIS', _businessNameController.text),
-                    _buildStaticInfo('NAMA LOKASI/OUTLET', _locationNameController.text),
-                  ],
-                ),
+          AbsorbPointer(
+            absorbing: _isActivated,
+            child: Opacity(
+              opacity: _isActivated ? 0.5 : 1.0,
+              child: ExpansionTile(
+                title: const Text('INFORMASI TEKNIS SERVER', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: Colors.grey)),
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(24),
+                    color: Colors.black.withOpacity(0.02),
+                    child: Column(
+                      children: [
+                        _buildField('BASE URL', _urlController),
+                        const SizedBox(height: 20),
+                        _buildField('CLIENT ID', _clientIdController),
+                        const SizedBox(height: 20),
+                        _buildField('CLIENT SECRET', _clientSecretController),
+                        const SizedBox(height: 20),
+                        _buildField('LOCATION ID', _locationIdController),
+                        const SizedBox(height: 24),
+                        const Divider(),
+                        const SizedBox(height: 16),
+                        _buildStaticInfo('NAMA BISNIS', _businessNameController.text),
+                        _buildStaticInfo('NAMA LOKASI/OUTLET', _locationNameController.text),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
           const SizedBox(height: 100),
         ],
@@ -1143,10 +1161,11 @@ class _ConfigScreenState extends State<ConfigScreen> {
                 const SizedBox(width: 12),
                 const Text('ACTIVATION LOG', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 12, letterSpacing: 1)),
                 const Spacer(),
-                GestureDetector(
-                  onTap: () => setState(() => _logs.clear()),
-                  child: const Text('CLEAR', style: TextStyle(color: Colors.grey, fontSize: 10, fontWeight: FontWeight.bold)),
-                ),
+                if (!_isActivated)
+                  GestureDetector(
+                    onTap: () => setState(() => _logs.clear()),
+                    child: const Text('CLEAR', style: TextStyle(color: Colors.grey, fontSize: 10, fontWeight: FontWeight.bold)),
+                  ),
               ],
             ),
           ),

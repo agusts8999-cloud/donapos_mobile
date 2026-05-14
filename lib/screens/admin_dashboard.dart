@@ -62,7 +62,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
   bool _soundEnabled = false;
   bool _secondScreenEnabled = false;
   bool _autoBackupEnabled = false;
-  bool _calculatorEnabled = true;
+  bool _calculatorEnabled = false;
   bool _toppingEditingEnabled = false;
   bool _autoPrintReceipt = true;
   bool _autoPostingEnabled = true;
@@ -76,8 +76,9 @@ class _AdminDashboardState extends State<AdminDashboard> {
   bool _printHoldReceiptEnabled = false;
   bool _allowEmergencyProduct = false;
   bool _syncAdminEnabled = false;
-  bool _askCustomerNameEnabled = true;
+  bool _askCustomerNameEnabled = false;
   bool _autoPayAfterKot = true;
+  bool _splitPaymentEnabled = false;
 
   List<Map<String, dynamic>> _paymentMethods = [];
   final Map<String, TextEditingController> _pmControllers = {};
@@ -203,17 +204,18 @@ class _AdminDashboardState extends State<AdminDashboard> {
       _autoPostingEnabled = prefs.getBool('auto_posting_enabled') ?? true; // Default ON
       _autoPostingInterval = prefs.getInt('auto_posting_interval') ?? 10;
       _showBillButton = prefs.getBool('show_bill_button') ?? false;
-      _showKitchenButton = prefs.getBool('show_kitchen_button') ?? false; // Default OFF
+      _showKitchenButton = prefs.getBool('show_kitchen_button') ?? true; // Default ON
       _showDiscountButton = prefs.getBool('show_discount_button') ?? false;
       _attendanceRequired = prefs.getBool('attendance_required') ?? true; // Default ON
-      _calculatorEnabled = prefs.getBool('show_calculator') ?? true; // Default ON
+      _calculatorEnabled = prefs.getBool('show_calculator') ?? false; // Default OFF
       _toppingEditingEnabled = prefs.getBool('topping_editing_enabled') ?? false;
       _showReportAppVersion = prefs.getBool('show_report_app_version') ?? true;
       _printHoldReceiptEnabled = prefs.getBool('print_hold_receipt_enabled') ?? false;
       _allowEmergencyProduct = prefs.getBool('allow_emergency_product') ?? false;
       _syncAdminEnabled = prefs.getBool('sync_admin_enabled') ?? false;
-      _askCustomerNameEnabled = prefs.getBool('ask_customer_name_enabled') ?? true;
+      _askCustomerNameEnabled = prefs.getBool('ask_customer_name_enabled') ?? false;
       _autoPayAfterKot = prefs.getBool('auto_pay_after_kot') ?? true;
+      _splitPaymentEnabled = prefs.getBool('split_payment_enabled') ?? false;
     
     // Load Quick Cash
       List<String> qc = prefs.getStringList('quick_cash_denominations') ?? ['20000', '50000', '100000'];
@@ -302,6 +304,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
     await prefs.setBool('sync_admin_enabled', _syncAdminEnabled);
     await prefs.setBool('ask_customer_name_enabled', _askCustomerNameEnabled);
     await prefs.setBool('auto_pay_after_kot', _autoPayAfterKot);
+    await prefs.setBool('split_payment_enabled', _splitPaymentEnabled);
     await prefs.setBool('auto_posting_enabled', _autoPostingEnabled);
     await prefs.setInt('auto_posting_interval', _autoPostingInterval);
     await prefs.setBool('show_bill_button', _showBillButton);
@@ -973,13 +976,24 @@ class _AdminDashboardState extends State<AdminDashboard> {
                   ),
                    const SizedBox(height: 16),
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                         Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                            const Text('LANGSUNG BAYAR SETELAH DAPUR', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: MetroColors.secondary)),
+                            const Text('Selesai cetak ke dapur otomatis buka layar bayar', style: TextStyle(fontSize: 9, color: Colors.grey)),
+                        ]),
+                        Switch(value: _autoPayAfterKot, activeColor: MetroColors.secondary, onChanged: (v) { setState(() => _autoPayAfterKot = v); _saveConfig(); })
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                      children: [
                         Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                           const Text('LANGSUNG BAYAR SETELAH DAPUR', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: MetroColors.secondary)),
-                           const Text('Selesai cetak ke dapur otomatis buka layar bayar', style: TextStyle(fontSize: 9, color: Colors.grey)),
+                           const Text('AKTIFKAN SPLIT PEMBAYARAN', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
+                           const Text('Izinkan kasir membagi pembayaran satu pesanan', style: TextStyle(fontSize: 9, color: Colors.grey)),
                        ]),
-                       Switch(value: _autoPayAfterKot, activeColor: MetroColors.secondary, onChanged: (v) { setState(() => _autoPayAfterKot = v); _saveConfig(); })
+                       Switch(value: _splitPaymentEnabled, activeColor: MetroColors.primary, onChanged: (v) { setState(() => _splitPaymentEnabled = v); _saveConfig(); })
                      ],
                    ),
                    const SizedBox(height: 16),

@@ -50,6 +50,7 @@ class _PosPaymentDialogState extends State<PosPaymentDialog> {
   final Set<int> _paidIndices = {};
 
   final ScrollController _methodScrollController = ScrollController();
+  bool _splitPaymentEnabled = false;
 
   double get totalAddedPayments => _addedPayments.fold(0, (sum, p) => sum + (p['amount'] as double));
   double get remainingBalance => widget.finalTotal - totalAddedPayments;
@@ -112,6 +113,8 @@ class _PosPaymentDialogState extends State<PosPaymentDialog> {
           if (qc != null && qc.isNotEmpty) {
               _quickCashAmounts = qc.map((e) => double.tryParse(e) ?? 0).where((d) => d > 0).toList();
           }
+          
+          _splitPaymentEnabled = _prefs!.getBool('split_payment_enabled') ?? false;
 
           // Initial selection: Select all (except those we might mark as paid later, but initially none)
           // Default input is the full total initially
@@ -389,7 +392,7 @@ class _PosPaymentDialogState extends State<PosPaymentDialog> {
                                                             value: isPaid || isChecked,
                                                             activeColor: isPaid ? Colors.grey : MetroColors.primary,
                                                             dense: true,
-                                                            onChanged: isPaid ? null : (_) => _toggleItemCheck(i),
+                                                            onChanged: isPaid || !_splitPaymentEnabled ? null : (_) => _toggleItemCheck(i),
                                                             title: Text(item.product.name.toUpperCase(), style: TextStyle(fontWeight: FontWeight.w900, fontSize: 10.sp, decoration: isPaid ? TextDecoration.lineThrough : null)),
                                                             subtitle: Text("${item.qty} x ${currency.format(item.price)}", style: TextStyle(fontSize: 10.sp)),
                                                             secondary: Text(currency.format(item.total), style: TextStyle(fontWeight: FontWeight.w900, fontSize: 12.sp, color: MetroColors.primary)),
@@ -520,7 +523,7 @@ class _PosPaymentDialogState extends State<PosPaymentDialog> {
                                     
                                     Row(
                                         children: [
-                                            if (_activeIndex == -1 && remainingBalance > 0 && (double.tryParse(_inputStr) ?? 0) > 0) ...[
+                                            if (_activeIndex == -1 && remainingBalance > 0 && (double.tryParse(_inputStr) ?? 0) > 0 && _splitPaymentEnabled) ...[
                                                 Expanded(
                                                     child: MetroButton(
                                                         label: "TAMBAH SPLIT",

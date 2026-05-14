@@ -1021,21 +1021,28 @@ class _PosScreenState extends State<PosScreen> {
   Future<void> _holdTransaction() async {
       if (!_cartController.hasItems) return;
 
-      final noteController = TextEditingController();
+      final randomCode = (1000 + Random().nextInt(9000)).toString();
+      final noteController = TextEditingController(text: randomCode);
+      noteController.selection = TextSelection(baseOffset: 0, extentOffset: randomCode.length);
+
       bool? confirm = await showDialog<bool>(
           context: context,
           builder: (ctx) => AlertDialog(
-              title: const Text('HOLD TRANSAKSI?'),
+              title: const Text('HOLD TRANSAKSI?', style: TextStyle(fontWeight: FontWeight.w900)),
               content: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                      const Text('Masukkan catatan untuk pesanan ini (opsional):'),
-                      const SizedBox(height: 12),
+                      const Text('Gunakan kode acak atau masukkan nama pelanggan:'),
+                      const SizedBox(height: 16),
                       TextField(
                           controller: noteController,
+                          autofocus: true,
+                          style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: MetroColors.primary, letterSpacing: 2),
+                          textAlign: TextAlign.center,
                           decoration: const InputDecoration(
                               border: OutlineInputBorder(),
-                              labelText: 'Catatan / Nama Pelanggan'
+                              labelText: 'Catatan / Nama Pelanggan',
+                              contentPadding: EdgeInsets.symmetric(vertical: 20),
                           ),
                       )
                   ],
@@ -1051,7 +1058,6 @@ class _PosScreenState extends State<PosScreen> {
 
       String holdNote = noteController.text.trim();
       if (holdNote.isEmpty) {
-          // Generate random 4 digit number if empty
           holdNote = (1000 + Random().nextInt(9000)).toString();
       }
 
