@@ -527,9 +527,11 @@ class _PosProductGridState extends State<PosProductGrid> {
                       ],
                     ),
                   ),
-                ),
-              ),
-            );
+                    ],   // close outer Stack children
+                  ),     // close outer Stack (line 420)
+                ),       // close Container (line 413)
+              ),         // close InkWell (line 405)
+            );           // close Material (line 403)
           },
         ),
       ),

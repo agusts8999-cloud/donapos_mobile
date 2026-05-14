@@ -72,8 +72,8 @@ class DonaposImage extends StatelessWidget {
               image: imageProvider,
               fit: fit,
               colorFilter: ColorFilter.mode(
-                Colors.black.withOpacity(1.0 - opacity!),
-                BlendMode.dstATop,
+                Colors.white.withOpacity(opacity!),
+                BlendMode.modulate,
               ),
             ),
           ),

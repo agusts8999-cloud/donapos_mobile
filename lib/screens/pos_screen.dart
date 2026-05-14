@@ -142,6 +142,7 @@ class _PosScreenState extends State<PosScreen> {
   // Printer
   BlueThermalPrinter printer = BlueThermalPrinter.instance;
   BluetoothDevice? _selectedDevice;
+  String? _currentConnectedMac;
   // ignore: unused_field
   bool _connected = false;
   int _printerFontType = 2;
@@ -587,21 +588,20 @@ class _PosScreenState extends State<PosScreen> {
             ]
           )
         );
-      }
+        },
+      ),
     );
   }
 
-  void _showExitConfirmation() {
-    showDialog(
-      context: context,
-      builder: (ctx) => ConfirmDialog(
-        title: 'KELUAR APLIKASI',
-        message: 'Apakah Anda yakin ingin keluar dari DonaPOS? Pastikan semua transaksi sudah tersimpan.',
-        confirmLabel: 'KELUAR SEKARANG',
-        cancelLabel: 'BATAL',
-        onConfirm: () => exit(0),
-      ),
+  void _showExitConfirmation() async {
+    final confirmed = await showAppConfirm(
+      context,
+      title: 'KELUAR APLIKASI',
+      message: 'Apakah Anda yakin ingin keluar dari DonaPOS? Pastikan semua transaksi sudah tersimpan.',
+      confirmLabel: 'KELUAR SEKARANG',
+      cancelLabel: 'BATAL',
     );
+    if (confirmed) exit(0);
   }
 
   // --- LOGIC: CART & PRODUCT ---
@@ -1775,6 +1775,7 @@ class _PosScreenState extends State<PosScreen> {
               
               // 1. Force Disconnect
               await printer.disconnect();
+              _currentConnectedMac = null;
               await Future.delayed(const Duration(milliseconds: 2000));
               
               // 2. Connect to Kitchen MAC
@@ -1784,27 +1785,36 @@ class _PosScreenState extends State<PosScreen> {
               bool success = await printer.connect(d) ?? false;
               if (!success) {
                   await Future.delayed(const Duration(milliseconds: 1500));
-                  await printer.connect(d);
+                  success = await printer.connect(d) ?? false;
               }
+              if (success) _currentConnectedMac = targetAddress;
               
               await Future.delayed(const Duration(milliseconds: 1000));
               
-              // 3. Print
-              if (await printer.isConnected ?? false) {
-                  await _executeKitchenPrintBT(printer);
-                  await Future.delayed(const Duration(milliseconds: 1500));
-              } else {
-                  throw "Gagal terhubung ke Printer Dapur ($targetAddress)";
-              }
-              
-              // 4. Revert
-              if (cashierAddress != null) {
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Kembali ke Kasir...'), duration: Duration(seconds: 1)));
+              try {
+                  // 3. Print
+                  if (await printer.isConnected ?? false) {
+                      await _executeKitchenPrintBT(printer);
+                      await Future.delayed(const Duration(milliseconds: 1500));
+                  } else {
+                      throw "Gagal terhubung ke Printer Dapur ($targetAddress)";
+                  }
+              } finally {
+                  // 4. Revert
                   await printer.disconnect();
+                  _currentConnectedMac = null;
                   await Future.delayed(const Duration(milliseconds: 2000));
-                  final devsAfter = await printer.getBondedDevices();
-                  final c = devsAfter.firstWhere((element) => element.address == cashierAddress);
-                  await printer.connect(c);
+                  if (cashierAddress != null) {
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Kembali ke Kasir...'), duration: Duration(seconds: 1)));
+                      final devsAfter = await printer.getBondedDevices();
+                      try {
+                          final c = devsAfter.firstWhere((element) => element.address == cashierAddress);
+                          await printer.connect(c);
+                          _currentConnectedMac = cashierAddress;
+                      } catch (e) {
+                          debugPrint("Gagal kembali ke kasir: $e");
+                      }
+                  }
               }
           }
       }
@@ -2078,7 +2088,10 @@ class _PosScreenState extends State<PosScreen> {
           try {
               if ((await printer.isConnected) != true) {
                   await printer.connect(_selectedDevice!);
+                  _currentConnectedMac = _selectedDevice!.address;
                   if (mounted) setState(() => _connected = true);
+              } else {
+                  _currentConnectedMac ??= _selectedDevice!.address;
               }
           } catch (e) {
               print("Error connecting printer: $e");
@@ -2087,9 +2100,22 @@ class _PosScreenState extends State<PosScreen> {
   }
 
   Future<bool> _ensurePrinterConnected() async {
-    if ((await printer.isConnected) == true) return true;
+    final prefs = await SharedPreferences.getInstance();
+    final savedAddress = prefs.getString('printer_address');
+
+    if ((await printer.isConnected) == true) {
+        if (_currentConnectedMac != savedAddress && savedAddress != null && savedAddress.isNotEmpty) {
+            debugPrint('[POS] Wrong printer connected ($_currentConnectedMac vs $savedAddress). Forcing disconnect.');
+            await printer.disconnect();
+            _currentConnectedMac = null;
+            await Future.delayed(const Duration(milliseconds: 1000));
+        } else {
+            return true;
+        }
+    }
+
     _initPrinter(); 
-    await Future.delayed(const Duration(milliseconds: 500));
+    await Future.delayed(const Duration(milliseconds: 1000));
     if ((await printer.isConnected) == true) return true;
 
     if (!mounted) return false;
