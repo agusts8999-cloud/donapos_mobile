@@ -792,7 +792,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
               ),
               const SizedBox(height: 8),
-              Text(label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 9, letterSpacing: 1)),
+              Text(label, style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 13.sp)),
           ],
       );
   }
@@ -858,7 +858,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                               children: [
                                                 Text('PERANGKAT SIAP!', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 11.sp, color: const Color(0xFF2E7D32), letterSpacing: 1.sc)),
                                                 SizedBox(height: 2.sc),
-                                                Text('Pilih nama Anda di bawah, lalu masukkan PIN dari admin.', style: TextStyle(fontSize: 10.sp, color: Colors.black54, fontWeight: FontWeight.w600)),
+                                                Text(
+                                                  'Pilih nama Anda di bawah, lalu masukkan PIN dari admin.',
+                                                  style: MetroTypography.body.copyWith(color: Colors.black54, fontWeight: FontWeight.w600),
+                                                ),
                                               ],
                                             ),
                                           ),
@@ -1049,7 +1052,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                         child: Column(
                                             mainAxisAlignment: MainAxisAlignment.center,
                                             children: [
-                                        Text(lp.translate('input_pin_security'), style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, color: Colors.black12, fontSize: 9)),
+                                        Text(
+                                          lp.translate('input_pin_security'),
+                                          style: MetroTypography.inputLabel.copyWith(color: Colors.black26, fontWeight: FontWeight.w900),
+                                        ),
                                         SizedBox(height: isLandscape ? 24 : 48),
                                         // PIN Indicators (SOLID METRO STYLE)
                                         Row(
@@ -1199,7 +1205,7 @@ class _LoginScreenState extends State<LoginScreen> {
         const SizedBox(height: 24),
 
         // BOX 2: STATUS SISTEM
-        Text(lp.translate('system_status'), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1.5)),
+        Text(lp.translate('system_status'), style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 13.sp)),
         const SizedBox(height: 8),
         _statusLine('• ${lp.translate('product_count')}= $products'),
         _statusLine('• ${lp.translate('category_count')}= $categories'),
@@ -1209,7 +1215,7 @@ class _LoginScreenState extends State<LoginScreen> {
         const SizedBox(height: 24),
         
         // BOX 3: STATUS TRANSAKSI
-        Text(lp.translate('transaction_status'), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1.5)),
+        Text(lp.translate('transaction_status'), style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 13.sp)),
         const SizedBox(height: 8),
         _statusLine('• $lastUser'),
         _statusLine('• TOTAL $lastTotal'),
@@ -1223,7 +1229,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget _statusLine(String text, {Color color = Colors.white70}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
-      child: Text(text, style: TextStyle(color: color, fontSize: 9.9, fontWeight: FontWeight.bold, height: 1.4)),
+      child: Text(text, style: MetroTypography.caption.copyWith(color: color, fontWeight: FontWeight.bold, height: 1.4)),
     );
   }
 }

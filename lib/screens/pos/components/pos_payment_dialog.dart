@@ -569,67 +569,68 @@ class _PosPaymentDialogState extends State<PosPaymentDialog> {
                         child: Container(
                             color: Colors.white,
                             padding: EdgeInsets.all(16.sc),
-                            child: SingleChildScrollView(
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                    Text("NUMPAD", style: TextStyle(color: MetroColors.primary, fontWeight: FontWeight.w900, fontSize: 14.sp, letterSpacing: 1.sc)),
-                                    SizedBox(height: 12.sc),
-                                    
-                                    // Moved Input Display here
-                                    Container(
-                                        width: double.infinity,
-                                        height: 60.sc,
-                                        padding: EdgeInsets.symmetric(horizontal: 16.sc),
-                                        decoration: BoxDecoration(
-                                            color: Colors.white,
-                                            border: Border.all(color: MetroColors.primary, width: 2.sc),
-                                            borderRadius: BorderRadius.circular(6.sc)
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                Text("NUMPAD", style: TextStyle(color: MetroColors.primary, fontWeight: FontWeight.w900, fontSize: 14.sp, letterSpacing: 1.sc)),
+                                SizedBox(height: 8.sc),
+                                Container(
+                                  width: double.infinity,
+                                  height: 68.sc,
+                                  padding: EdgeInsets.symmetric(horizontal: 16.sc, vertical: 6.sc),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    border: Border.all(color: MetroColors.primary, width: 2.sc),
+                                    borderRadius: BorderRadius.circular(6.sc),
+                                  ),
+                                  alignment: Alignment.centerRight,
+                                  child: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    alignment: Alignment.centerRight,
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      crossAxisAlignment: CrossAxisAlignment.end,
+                                      children: [
+                                        Text(
+                                          "JUMLAH BAYAR",
+                                          style: MetroTypography.inputLabel.copyWith(fontWeight: FontWeight.w900),
+                                          maxLines: 1,
                                         ),
-                                        alignment: Alignment.centerRight,
-                                        child: Column(
-                                            mainAxisAlignment: MainAxisAlignment.center,
-                                            crossAxisAlignment: CrossAxisAlignment.end,
-                                            children: [
-                                                Text("JUMLAH BAYAR", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 8.sp, color: Colors.black54, letterSpacing: 0.5.sc)),
-                                                Text(
-                                                    NumberFormat.decimalPattern('id').format(double.tryParse(_inputStr) ?? 0),
-                                                    style: TextStyle(fontSize: 24.sp, fontWeight: FontWeight.w900, color: MetroColors.primary)
-                                                ),
-                                            ],
+                                        Text(
+                                          NumberFormat.decimalPattern('id').format(double.tryParse(_inputStr) ?? 0),
+                                          style: TextStyle(fontSize: 24.sp, fontWeight: FontWeight.w900, color: MetroColors.primary),
+                                          maxLines: 1,
                                         ),
+                                      ],
                                     ),
-                                    SizedBox(height: 12.sc),
-                                    ConstrainedBox(
-                                        constraints: BoxConstraints(maxHeight: 350.sc, minHeight: 250.sc),
-                                        child: _buildNumpad(),
-                                    ),
-                                    SizedBox(height: 12.sc),
-                                    Text("CEPAT", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 10.sp, color: Colors.black54, letterSpacing: 1.sc)),
-                                    SizedBox(height: 6.sc),
-                                    Wrap(
-                                        spacing: 6.sc,
-                                        runSpacing: 6.sc,
-                                        children: [
-                                            ..._quickCashAmounts.map((amt) => _quickCashBtn(amt)),
-                                            _quickCashBtn(0, label: "UANG PAS"),
-                                        ],
-                                    ),
-                                    SizedBox(height: 12.sc),
-                                    SizedBox(
-                                        width: double.infinity,
-                                        height: 48.sc,
-                                        child: MetroButton(
-                                            label: "HAPUS / RESET",
-                                            icon: Icons.backspace_outlined,
-                                            color: Colors.red[50]!,
-                                            textColor: Colors.red[700]!,
-                                            onPressed: () => _onNumpadTap('C'),
-                                        ),
-                                    )
-                                ],
-                              ),
+                                  ),
+                                ),
+                                SizedBox(height: 8.sc),
+                                Expanded(child: _buildNumpad()),
+                                SizedBox(height: 8.sc),
+                                Text("CEPAT", style: MetroTypography.inputLabel.copyWith(fontWeight: FontWeight.w900)),
+                                SizedBox(height: 6.sc),
+                                Wrap(
+                                  spacing: 6.sc,
+                                  runSpacing: 6.sc,
+                                  children: [
+                                    ..._quickCashAmounts.map((amt) => _quickCashBtn(amt)),
+                                    _quickCashBtn(0, label: "UANG PAS"),
+                                  ],
+                                ),
+                                SizedBox(height: 8.sc),
+                                SizedBox(
+                                  width: double.infinity,
+                                  height: 48.sc,
+                                  child: MetroButton(
+                                    label: "HAPUS / RESET",
+                                    icon: Icons.backspace_outlined,
+                                    color: Colors.red[50]!,
+                                    textColor: Colors.red[700]!,
+                                    onPressed: () => _onNumpadTap('C'),
+                                  ),
+                                ),
+                              ],
                             ),
                         ),
                     ),
@@ -648,7 +649,7 @@ class _PosPaymentDialogState extends State<PosPaymentDialog> {
                   Flexible(
                     child: FittedBox(
                       fit: BoxFit.scaleDown,
-                      child: Text(label, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11.sp, color: Colors.black54)),
+                      child: Text(label, style: MetroTypography.body.copyWith(fontWeight: FontWeight.bold, color: Colors.black54)),
                     ),
                   ),
                   SizedBox(width: 8.sc),
@@ -725,16 +726,15 @@ class _PosPaymentDialogState extends State<PosPaymentDialog> {
   }
   
   Widget _buildNumpad() {
-      final keys = ['7','8','9','4','5','6','1','2','3','0','00','BACK'];
-      
       return GridView.builder(
-          itemCount: keys.length,
+          physics: const NeverScrollableScrollPhysics(),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 3, 
               crossAxisSpacing: 6.sc, 
               mainAxisSpacing: 6.sc,
               childAspectRatio: 1.4,
           ),
+          itemCount: 12,
           itemBuilder: (ctx, i) {
               final labels = ['1','2','3','4','5','6','7','8','9','00','0','BACK'];
               final val = labels[i];

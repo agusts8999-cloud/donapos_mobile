@@ -1237,9 +1237,10 @@ class _ConfigScreenState extends State<ConfigScreen> {
               _connectionVerified = false;
               _connectionStatusMessage = null;
             }),
-            style: const TextStyle(fontWeight: FontWeight.bold),
+            style: MetroTypography.inputText,
             decoration: InputDecoration(
               hintText: 'https://alamat-server-anda/public',
+              hintStyle: MetroTypography.inputHint,
               fillColor: const Color(0xFFF9FAFB),
               filled: true,
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -1373,7 +1374,7 @@ class _ConfigScreenState extends State<ConfigScreen> {
         const SizedBox(height: 8),
         TextField(
           controller: _noteController,
-          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+          style: MetroTypography.inputText,
           decoration: InputDecoration(
             hintText: 'Contoh: Kasir Depan, Tablet 2',
             fillColor: const Color(0xFFF9FAFB),
@@ -1699,11 +1700,11 @@ class _ConfigScreenState extends State<ConfigScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(color: Colors.black38, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1)),
+        Text(label, style: MetroTypography.inputLabel),
         const SizedBox(height: 8),
         TextField(
           controller: controller,
-          style: const TextStyle(color: MetroColors.text, fontSize: 14, fontWeight: FontWeight.bold),
+          style: MetroTypography.inputText,
           decoration: InputDecoration(
             fillColor: Colors.white,
             filled: true,
@@ -1722,8 +1723,11 @@ class _ConfigScreenState extends State<ConfigScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(color: Colors.black45, fontSize: 11, fontWeight: FontWeight.bold)),
-          Text(value.isEmpty ? '-' : value.toUpperCase(), style: const TextStyle(color: MetroColors.primary, fontWeight: FontWeight.w900, fontSize: 12)),
+          Text(label, style: MetroTypography.body.copyWith(color: Colors.black45, fontWeight: FontWeight.bold)),
+          Text(
+            value.isEmpty ? '-' : value.toUpperCase(),
+            style: MetroTypography.body.copyWith(color: MetroColors.primary, fontWeight: FontWeight.w900),
+          ),
         ],
       ),
     );

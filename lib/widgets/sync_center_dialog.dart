@@ -318,7 +318,7 @@ class _SyncCenterDialogState extends State<SyncCenterDialog> {
             children: [
               const Icon(Icons.security, size: 14, color: Colors.blue),
               const SizedBox(width: 8),
-              const Text('OTENTIKASI MANUAL (OVERRIDE)', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.blue, letterSpacing: 0.5)),
+              Text('Otentikasi manual (teknisi)', style: MetroTypography.body.copyWith(fontWeight: FontWeight.w900, color: Colors.blue)),
             ],
           ),
           const SizedBox(height: 12),
@@ -334,9 +334,9 @@ class _SyncCenterDialogState extends State<SyncCenterDialog> {
                     filled: true,
                     fillColor: Colors.white,
                     isDense: true,
-                    labelStyle: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.blue.withOpacity(0.5)),
+                    labelStyle: MetroTypography.inputLabel.copyWith(color: Colors.blue.withOpacity(0.7)),
                   ),
-                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                  style: MetroTypography.inputText,
                 ),
               ),
               const SizedBox(width: 12),
@@ -351,9 +351,9 @@ class _SyncCenterDialogState extends State<SyncCenterDialog> {
                     filled: true,
                     fillColor: Colors.white,
                     isDense: true,
-                    labelStyle: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.blue.withOpacity(0.5)),
+                    labelStyle: MetroTypography.inputLabel.copyWith(color: Colors.blue.withOpacity(0.7)),
                   ),
-                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                  style: MetroTypography.inputText,
                 ),
               ),
               const SizedBox(width: 8),
@@ -368,7 +368,10 @@ class _SyncCenterDialogState extends State<SyncCenterDialog> {
             ],
           ),
           const SizedBox(height: 8),
-          const Text('* Gunakan ini jika sinkronisasi gagal karena akses ditolak.', style: TextStyle(fontSize: 9, color: Colors.blueGrey, fontStyle: FontStyle.italic)),
+          Text(
+            '* Gunakan jika unduh gagal karena akses ditolak.',
+            style: MetroTypography.caption.copyWith(color: Colors.blueGrey, fontStyle: FontStyle.italic),
+          ),
         ],
       ),
     );
@@ -562,7 +565,7 @@ class _SyncCenterDialogState extends State<SyncCenterDialog> {
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               ),
               icon: const Icon(Icons.check_box, size: 16, color: MetroColors.primary),
-              label: Text('PILIH SEMUA', style: TextStyle(color: MetroColors.primary, fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 1)),
+              label: Text('Pilih semua', style: MetroTypography.caption.copyWith(color: MetroColors.primary, fontWeight: FontWeight.w900)),
             ),
             const SizedBox(width: 8),
             OutlinedButton.icon(
@@ -576,7 +579,7 @@ class _SyncCenterDialogState extends State<SyncCenterDialog> {
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               ),
               icon: const Icon(Icons.check_box_outline_blank, size: 16, color: Colors.black26),
-              label: const Text('BERSIHKAN', style: TextStyle(color: Colors.black45, fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 1)),
+              label: Text('Bersihkan', style: MetroTypography.caption.copyWith(color: Colors.black45, fontWeight: FontWeight.w900)),
             ),
             const SizedBox(width: 8),
             OutlinedButton.icon(
@@ -703,7 +706,7 @@ class _SyncCenterDialogState extends State<SyncCenterDialog> {
             else if (isSyncing)
               const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation(MetroColors.primary)))
             else
-              Text('MENUNGGU', style: TextStyle(color: Colors.black12, fontSize: 9, fontWeight: FontWeight.bold)),
+              Text('Menunggu', style: MetroTypography.caption.copyWith(color: Colors.black26, fontWeight: FontWeight.bold)),
           ],
         ),
       ),
@@ -723,7 +726,7 @@ class _SyncCenterDialogState extends State<SyncCenterDialog> {
             isDownloadPreset
                 ? 'Unduh semua data bisnis yang dibutuhkan kasir (produk, kasir, meja, dll).'
                 : 'Kirim data penjualan, biaya, dan absensi dari tablet ke server.',
-            style: const TextStyle(fontSize: 13, color: Colors.black54, height: 1.4),
+            style: MetroTypography.body.copyWith(color: Colors.black54),
           ),
           const SizedBox(height: 20),
           ClipRRect(
@@ -738,11 +741,7 @@ class _SyncCenterDialogState extends State<SyncCenterDialog> {
           const SizedBox(height: 12),
           Text(
             _simpleStatus,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 12,
-              color: MetroColors.text,
-            ),
+            style: MetroTypography.body.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 24),
           MetroButton(

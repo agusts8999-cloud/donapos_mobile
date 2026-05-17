@@ -15,6 +15,7 @@ import 'package:donapos_mobile/services/logger_service.dart';
 import 'package:donapos_mobile/language_provider.dart';
 import 'package:donapos_mobile/location_service.dart';
 import 'package:donapos_mobile/utils_scaler.dart';
+import 'package:donapos_mobile/services/ui_text_scale.dart';
 
 void _configureImageCache() {
   final cache = PaintingBinding.instance.imageCache;
@@ -46,6 +47,7 @@ void main() async {
   _configureErrorHandlers();
 
   await ScreenScaler.loadSettings();
+  await UiTextScale.load();
 
   if (Platform.isAndroid || Platform.isIOS) {
     SystemChrome.setPreferredOrientations([
@@ -73,14 +75,28 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => PosCartController()),
         ChangeNotifierProvider(create: (_) => PosProvider()),
       ],
-      child: MaterialApp(
-        title: 'DonaPOS_Fnb_Plus',
-        debugShowCheckedModeBanner: false,
-        theme: MetroDesign.theme,
-        navigatorObservers: [appRouteObserver],
-        home: const SplashScreen(),
-        routes: {
-          'customer_display': (context) => const CustomerDisplayScreen(),
+      child: ListenableBuilder(
+        listenable: UiTextScale.instance,
+        builder: (context, _) {
+          return MaterialApp(
+            title: 'DonaPOS_Fnb_Plus',
+            debugShowCheckedModeBanner: false,
+            theme: MetroDesign.theme,
+            navigatorObservers: [appRouteObserver],
+            builder: (context, child) {
+              ScreenScaler.init(context);
+              return MediaQuery(
+                data: MediaQuery.of(context).copyWith(
+                  textScaler: TextScaler.linear(UiTextScale.instance.scale),
+                ),
+                child: child ?? const SizedBox.shrink(),
+              );
+            },
+            home: const SplashScreen(),
+            routes: {
+              'customer_display': (context) => const CustomerDisplayScreen(),
+            },
+          );
         },
       ),
     );

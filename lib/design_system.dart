@@ -78,11 +78,24 @@ class MetroDesign {
         ),
       ),
       textTheme: TextTheme(
-        headlineLarge: TextStyle(fontSize: ScreenScaler.scale(24.7), fontWeight: FontWeight.bold, color: MetroColors.text, height: 1.2),
-        headlineMedium: TextStyle(fontSize: ScreenScaler.scale(18.5), fontWeight: FontWeight.bold, color: MetroColors.text),
-        titleLarge: TextStyle(fontSize: ScreenScaler.scale(13.9), fontWeight: FontWeight.bold, color: MetroColors.text, letterSpacing: 1.0),
-        bodyLarge: TextStyle(fontSize: ScreenScaler.scale(12.3), color: MetroColors.text),
-        bodyMedium: TextStyle(fontSize: ScreenScaler.scale(10.8), color: MetroColors.text),
+        headlineLarge: TextStyle(fontSize: ScreenScaler.scale(26), fontWeight: FontWeight.bold, color: MetroColors.text, height: 1.2),
+        headlineMedium: TextStyle(fontSize: ScreenScaler.scale(20), fontWeight: FontWeight.bold, color: MetroColors.text),
+        titleLarge: TextStyle(fontSize: ScreenScaler.scale(17), fontWeight: FontWeight.bold, color: MetroColors.text, letterSpacing: 0.5),
+        bodyLarge: TextStyle(fontSize: ScreenScaler.scale(14), color: MetroColors.text, height: 1.35),
+        bodyMedium: TextStyle(fontSize: ScreenScaler.scale(13), color: MetroColors.text, height: 1.35),
+        labelLarge: TextStyle(fontSize: ScreenScaler.scale(13), fontWeight: FontWeight.w600, color: Colors.black54),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        isDense: false,
+        contentPadding: EdgeInsets.symmetric(
+          horizontal: ScreenScaler.scale(16),
+          vertical: ScreenScaler.scale(14),
+        ),
+        hintStyle: TextStyle(
+          fontSize: ScreenScaler.scale(13),
+          color: Colors.black45,
+          fontWeight: FontWeight.w500,
+        ),
       ),
       cardTheme: const CardThemeData(
         color: MetroColors.white,
@@ -103,11 +116,38 @@ class MetroDesign {
 }
 
 class MetroTypography {
-  static TextStyle get h1 => TextStyle(fontSize: ScreenScaler.scale(24.7), fontWeight: FontWeight.w900, color: MetroColors.text, letterSpacing: 1.5);
-  static TextStyle get h2 => TextStyle(fontSize: ScreenScaler.scale(18.5), fontWeight: FontWeight.w900, color: MetroColors.text, letterSpacing: 1.2);
-  static TextStyle get h3 => TextStyle(fontSize: ScreenScaler.scale(13.9), fontWeight: FontWeight.w900, color: MetroColors.text, letterSpacing: 1.0);
-  static TextStyle get body => TextStyle(fontSize: ScreenScaler.scale(10.8), color: MetroColors.text);
-  static TextStyle get small => TextStyle(fontSize: ScreenScaler.scale(8.5), color: MetroColors.text);
+  static TextStyle get h1 => TextStyle(fontSize: 26.sp, fontWeight: FontWeight.w900, color: MetroColors.text, letterSpacing: 0.5);
+  static TextStyle get h2 => TextStyle(fontSize: 20.sp, fontWeight: FontWeight.w900, color: MetroColors.text, letterSpacing: 0.5);
+  static TextStyle get h3 => TextStyle(fontSize: 17.sp, fontWeight: FontWeight.w900, color: MetroColors.text, letterSpacing: 0.3);
+  static TextStyle get body => TextStyle(fontSize: 14.sp, color: MetroColors.text, height: 1.35);
+  static TextStyle get caption => TextStyle(fontSize: 12.sp, color: MetroColors.text, height: 1.3);
+  /// Minimum readable meta text (floor).
+  static TextStyle get small => caption;
+
+  static TextStyle get inputLabel => TextStyle(
+        fontSize: 13.sp,
+        fontWeight: FontWeight.w700,
+        letterSpacing: 0.3,
+        color: Colors.black54,
+      );
+
+  static TextStyle get inputText => TextStyle(
+        fontSize: 16.sp,
+        color: MetroColors.text,
+        fontWeight: FontWeight.w600,
+      );
+
+  static TextStyle get inputHint => TextStyle(
+        fontSize: 13.sp,
+        color: Colors.black45,
+        fontWeight: FontWeight.w500,
+      );
+
+  static TextStyle get button => TextStyle(
+        fontSize: 14.sp,
+        fontWeight: FontWeight.w800,
+        letterSpacing: 0.5,
+      );
 }
 
 // Atomic Widgets
@@ -161,12 +201,7 @@ class MetroButton extends StatelessWidget {
                       ],
                       Text(
                         label.toUpperCase(),
-                        style: TextStyle(
-                          color: textColor,
-                          fontWeight: FontWeight.w900,
-                          fontSize: isSecondary ? 10.0.sp : 11.5.sp,
-                          letterSpacing: 1.0.sc, // Slightly reduced from 1.5.sc
-                        ),
+                        style: MetroTypography.button.copyWith(color: textColor),
                       ),
                     ],
               ),
@@ -189,7 +224,7 @@ class MetroSectionTitle extends StatelessWidget {
       padding: EdgeInsets.only(bottom: 16.sc),
       child: Text(
         title.toUpperCase(), 
-        style: TextStyle(color: color, fontSize: 8.5.sp, fontWeight: FontWeight.w900, letterSpacing: 2.5.sc)
+        style: TextStyle(color: color, fontSize: 13.sp, fontWeight: FontWeight.w900, letterSpacing: 0.8)
       ),
     );
   }
@@ -309,11 +344,11 @@ class MetroTile extends StatelessWidget {
              child: Text(
                label.toUpperCase(), 
                style: TextStyle(
-                   color: MetroColors.text, 
-                   fontWeight: FontWeight.w900, 
-                   fontSize: 8.5.sp,
-                   letterSpacing: 0.8.sc,
-                   height: 1.0
+                 color: MetroColors.text,
+                 fontWeight: FontWeight.w800,
+                 fontSize: 13.sp,
+                 letterSpacing: 0.3,
+                 height: 1.1,
                ),
              ),
            ),
@@ -369,18 +404,10 @@ class _MetroInputState extends State<MetroInput> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          widget.label.toUpperCase(),
-          style: TextStyle(
-            fontSize: 7.7.sp,
-            fontWeight: FontWeight.w900,
-            letterSpacing: 1.5.sc,
-            color: Colors.black54,
-          ),
-        ),
+        Text(widget.label, style: MetroTypography.inputLabel),
         SizedBox(height: 8.sc),
         Container(
-          height: 50.sc,
+          height: 56.sc,
           decoration: BoxDecoration(
             color: MetroColors.white,
             border: Border.all(color: Colors.black.withOpacity(0.1), width: 1.sc),
@@ -390,11 +417,11 @@ class _MetroInputState extends State<MetroInput> {
             obscureText: _obscureText,
             keyboardType: widget.keyboardType,
             onChanged: widget.onChanged,
-            style: TextStyle(fontSize: 10.8.sp, color: MetroColors.text, fontWeight: FontWeight.bold),
+            style: MetroTypography.inputText,
             decoration: InputDecoration(
-              hintText: widget.hint?.toUpperCase(),
-              hintStyle: TextStyle(color: Colors.black26, fontSize: 9.3.sp),
-              contentPadding: EdgeInsets.symmetric(horizontal: 16.sc, vertical: 15.sc),
+              hintText: widget.hint,
+              hintStyle: MetroTypography.inputHint,
+              contentPadding: EdgeInsets.symmetric(horizontal: 16.sc, vertical: 16.sc),
               border: InputBorder.none,
               suffixIcon: widget.isPassword ? IconButton(
                 icon: Icon(

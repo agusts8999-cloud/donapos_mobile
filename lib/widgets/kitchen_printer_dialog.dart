@@ -60,12 +60,26 @@ class _KitchenPrinterDialogState extends State<KitchenPrinterDialog> {
   }
 
   Future<void> _saveSettings() async {
+    final address = _printerType == 'lan' ? _ipController.text.trim() : _printerAddress.trim();
+    if (_isEnabled && address.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Isi alamat printer dapur (Bluetooth atau IP) sebelum mengaktifkan.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      return;
+    }
+
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('kitchen_printer_type', _printerType);
-    await prefs.setString('kitchen_printer_address', _printerType == 'lan' ? _ipController.text : _printerAddress);
+    await prefs.setString('kitchen_printer_address', address);
     await prefs.setString('kitchen_printer_alias', _aliasController.text);
     await prefs.setBool('kitchen_printer_enabled', _isEnabled);
-    
+    await prefs.setBool('show_kitchen_button', _isEnabled);
+
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Konfigurasi Printer Dapur Disimpan')));
       Navigator.pop(context);

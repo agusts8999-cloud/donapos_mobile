@@ -282,13 +282,13 @@ class _InvoiceSettingsDialogState extends State<InvoiceSettingsDialog> {
                            Expanded(
                              child: TextField(
                                controller: _prefixController,
-                               decoration: const InputDecoration(
-                                 labelText: 'PREFIX NO. FAKTUR',
-                                 labelStyle: TextStyle(fontSize: 12),
-                                 border: OutlineInputBorder(),
-                                 isDense: true,
+                               style: MetroTypography.inputText,
+                               decoration: InputDecoration(
+                                 labelText: 'Prefix no. faktur',
+                                 labelStyle: MetroTypography.inputLabel,
+                                 border: const OutlineInputBorder(),
+                                 isDense: false,
                                ),
-                               style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
                              ),
                            ),
                            const SizedBox(width: 12),
@@ -296,13 +296,13 @@ class _InvoiceSettingsDialogState extends State<InvoiceSettingsDialog> {
                              child: TextField(
                                controller: _startIndexController,
                                keyboardType: TextInputType.number,
-                               decoration: const InputDecoration(
-                                 labelText: 'INDEX MULAI (START)',
-                                 labelStyle: TextStyle(fontSize: 12),
-                                 border: OutlineInputBorder(),
-                                 isDense: true,
+                               style: MetroTypography.inputText,
+                               decoration: InputDecoration(
+                                 labelText: 'Index mulai',
+                                 labelStyle: MetroTypography.inputLabel,
+                                 border: const OutlineInputBorder(),
+                                 isDense: false,
                                ),
-                               style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
                              ),
                            ),
                          ],
@@ -503,7 +503,7 @@ class _InvoiceSettingsDialogState extends State<InvoiceSettingsDialog> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(width: 100, child: Text(label, style: const TextStyle(color: Colors.black54, fontSize: 11))),
+          SizedBox(width: 100, child: Text(label, style: MetroTypography.inputLabel)),
           Expanded(child: Text(value ?? '-', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
         ],
       ),
@@ -538,7 +538,7 @@ class _InvoiceSettingsDialogState extends State<InvoiceSettingsDialog> {
               visualDensity: VisualDensity.compact,
             ),
           ),
-          Text(label, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+          Text(label, style: MetroTypography.body.copyWith(fontWeight: FontWeight.bold)),
         ],
       ),
     );

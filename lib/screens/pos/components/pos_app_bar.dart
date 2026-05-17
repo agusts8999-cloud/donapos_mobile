@@ -40,6 +40,7 @@ class PosAppBar extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback onCalculatorPressed;
   final bool calculatorEnabled;
   final bool billEnabled;
+  /// True when kitchen printer is enabled and configured (shows Dapur action).
   final bool kitchenEnabled;
   final int unsyncedCount;
   final bool isDemo;

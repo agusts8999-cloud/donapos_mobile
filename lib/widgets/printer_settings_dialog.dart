@@ -190,7 +190,7 @@ class _PrinterSettingsDialogState extends State<PrinterSettingsDialog> {
   Widget _buildKasirTab() {
      return Column(
         children: [
-            const Align(alignment: Alignment.centerLeft, child: Text("JENIS PRINTER KASIR", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: MetroColors.text))),
+            Align(alignment: Alignment.centerLeft, child: Text("Jenis printer kasir", style: MetroTypography.body.copyWith(fontWeight: FontWeight.bold))),
             const SizedBox(height: 8),
             Row(
               children: [
@@ -206,7 +206,7 @@ class _PrinterSettingsDialogState extends State<PrinterSettingsDialog> {
               Expanded(child: _buildIcodSettings()),
             ],
             const SizedBox(height: 16),
-            const Align(alignment: Alignment.centerLeft, child: Text("JENIS FONT STRUK", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: MetroColors.text))),
+            Align(alignment: Alignment.centerLeft, child: Text("Jenis font struk", style: MetroTypography.body.copyWith(fontWeight: FontWeight.bold))),
             const SizedBox(height: 8),
             Row(
               children: [
@@ -269,7 +269,7 @@ class _PrinterSettingsDialogState extends State<PrinterSettingsDialog> {
                                ]
                              ],
                            ),
-                           subtitle: Text(d.address ?? '', style: const TextStyle(fontSize: 11)),
+                           subtitle: Text(d.address ?? '', style: MetroTypography.caption),
                            trailing: isSelected && _connected ? const Icon(Icons.check_circle, color: Colors.green) : null,
                            onTap: () async {
                                setState(() { _selectedDevice = d; });
@@ -287,7 +287,7 @@ class _PrinterSettingsDialogState extends State<PrinterSettingsDialog> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-           const Text("METODE KONEKSI", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
+           Text("Metode koneksi", style: MetroTypography.body.copyWith(fontWeight: FontWeight.bold)),
            const SizedBox(height: 8),
            DropdownButtonFormField<String>(
              value: _icodConnType,
@@ -297,15 +297,16 @@ class _PrinterSettingsDialogState extends State<PrinterSettingsDialog> {
            ),
            if (_icodConnType == 'Serial') ...[
              const SizedBox(height: 16),
-             const Text("SERIAL PATH", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
+             Text("Serial path", style: MetroTypography.inputLabel),
              const SizedBox(height: 8),
              TextFormField(
                initialValue: _icodSerialPath,
+               style: MetroTypography.inputText,
                decoration: const InputDecoration(filled: true, fillColor: Colors.white, border: OutlineInputBorder(borderRadius: BorderRadius.zero)),
                onChanged: (v) => _icodSerialPath = v,
              ),
              const SizedBox(height: 16),
-             const Text("BAUD RATE", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
+             Text("Baud rate", style: MetroTypography.inputLabel),
              const SizedBox(height: 8),
              DropdownButtonFormField<int>(
                value: _icodBaudRate,
@@ -366,7 +367,7 @@ class _PrinterSettingsDialogState extends State<PrinterSettingsDialog> {
           padding: const EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(color: selected ? MetroColors.primary : Colors.grey[100], border: Border.all(color: selected ? MetroColors.primary : Colors.grey[300]!)),
           alignment: Alignment.center,
-          child: Text(label, style: TextStyle(color: selected ? Colors.white : Colors.black54, fontWeight: FontWeight.bold, fontSize: 9), textAlign: TextAlign.center),
+          child: Text(label, style: MetroTypography.caption.copyWith(color: selected ? Colors.white : Colors.black54, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
         )
       )
     );

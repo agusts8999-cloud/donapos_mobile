@@ -35,6 +35,7 @@ import 'package:donapos_mobile/sync_service.dart';
 import 'package:donapos_mobile/widgets/demo_restriction_dialog.dart';
 import 'package:donapos_mobile/models/admin_sync_preset.dart';
 import 'package:donapos_mobile/services/admin_sync_runner.dart';
+import 'package:donapos_mobile/services/ui_text_scale.dart';
 
 class AdminDashboard extends StatefulWidget {
   final String username;
@@ -448,7 +449,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
       await prefs.setBool('sound_enabled', false);
       await prefs.setBool('show_calculator', true);
       await prefs.setBool('show_report_app_version', true);
-      await prefs.setBool('ask_customer_name_enabled', true);
+      await prefs.setBool('ask_customer_name_enabled', false);
       
       // Enforce Defaults
       await prefs.setBool('attendance_required', true);
@@ -570,12 +571,11 @@ class _AdminDashboardState extends State<AdminDashboard> {
                                 color: Colors.orange,
                                 borderRadius: BorderRadius.circular(4),
                               ),
-                              child: const Text(
+                              child: Text(
                                 'DEMO',
-                                style: TextStyle(
+                                style: MetroTypography.caption.copyWith(
                                   color: Colors.black,
                                   fontWeight: FontWeight.w900,
-                                  fontSize: 9,
                                 ),
                               ),
                             ),
@@ -585,7 +585,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                         widget.username.toUpperCase(),
                         style: TextStyle(
                           color: Colors.white.withOpacity(0.7),
-                          fontSize: 9,
+                          fontSize: 12,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -611,7 +611,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                           style: TextStyle(
                             color: isSelected ? MetroColors.primary : Colors.black54,
                             fontWeight: FontWeight.bold,
-                            fontSize: 11,
+                            fontSize: 13,
                           ),
                         ),
                         onTap: () => setState(() => _selectedIndex = index),
@@ -796,7 +796,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
               const SizedBox(height: 12),
               Text(title, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 14)),
               const SizedBox(height: 4),
-              Text(subtitle, style: const TextStyle(fontSize: 11, color: Colors.black45)),
+              Text(subtitle, style: MetroTypography.caption.copyWith(color: Colors.black45)),
             ],
           ),
         ),
@@ -989,6 +989,8 @@ class _AdminDashboardState extends State<AdminDashboard> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        _buildTextScaleSection(),
+        const SizedBox(height: 24),
         const MetroSectionTitle(title: 'Kirim ke cloud'),
         SizedBox(
           height: 260,
@@ -1063,7 +1065,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
             children: [
               ExpansionTile(
                 initiallyExpanded: true,
-                title: const Text('Operasional', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13)),
+                title: Text('Operasional', style: MetroTypography.h3),
                 children: [
                   _buildSettingRow(
                     'Backup otomatis setelah transaksi',
@@ -1120,7 +1122,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
               const Divider(height: 1),
               ExpansionTile(
                 initiallyExpanded: true,
-                title: const Text('Tampilan kasir', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13)),
+                title: Text('Tampilan kasir', style: MetroTypography.h3),
                 children: [
                   _buildSettingRow(
                     'Cetak struk ganda',
@@ -1152,17 +1154,12 @@ class _AdminDashboardState extends State<AdminDashboard> {
                     _showBillButton,
                     (v) { setState(() => _showBillButton = v); _saveConfig(); },
                   ),
-                  _buildSettingRow(
-                    'Tombol cetak dapur',
-                    'Tampilkan tombol Dapur di kasir',
-                    _showKitchenButton,
-                    (v) { setState(() => _showKitchenButton = v); _saveConfig(); },
-                  ),
-                  _buildSettingRow(
-                    'Bayar setelah cetak dapur',
-                    'Buka layar bayar otomatis setelah kirim dapur',
-                    _autoPayAfterKot,
-                    (v) { setState(() => _autoPayAfterKot = v); _saveConfig(); },
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                    child: Text(
+                      'Tombol Dapur di header kasir muncul otomatis saat printer dapur diaktifkan (Pengaturan → Printer dapur). Sebelum bayar, kasir ditanya cetak ke dapur (Ya/Tidak).',
+                      style: MetroTypography.caption.copyWith(color: Colors.black54, height: 1.4),
+                    ),
                   ),
                   _buildSettingRow(
                     'Pembayaran terpisah',
@@ -1180,7 +1177,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
               ),
               const Divider(height: 1),
               ExpansionTile(
-                title: const Text('Animasi & suara', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13)),
+                title: Text('Animasi & suara', style: MetroTypography.h3),
                 children: [
                   _buildSettingRow(
                     'Animasi daftar produk',
@@ -1273,18 +1270,68 @@ class _AdminDashboardState extends State<AdminDashboard> {
     );
   }
 
+  Widget _buildTextScaleSection() {
+    final scale = UiTextScale.instance.scale;
+    final divisions =
+        ((UiTextScale.maxScale - UiTextScale.minScale) / UiTextScale.step).round();
+
+    return MetroPanel(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Ukuran teks aplikasi', style: MetroTypography.h3),
+          const SizedBox(height: 6),
+          Text(
+            'Geser untuk memperbesar teks saat demo (${UiTextScale.instance.percentLabel}%). Berlaku di seluruh aplikasi.',
+            style: MetroTypography.body.copyWith(color: Colors.black54),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Text('100%', style: MetroTypography.caption),
+              Expanded(
+                child: Slider(
+                  value: scale,
+                  min: UiTextScale.minScale,
+                  max: UiTextScale.maxScale,
+                  divisions: divisions,
+                  label: '${UiTextScale.instance.percentLabel}%',
+                  onChanged: (v) => UiTextScale.instance.setScale(v),
+                ),
+              ),
+              Text('130%', style: MetroTypography.caption),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text('Pratinjau', style: MetroTypography.inputLabel),
+          const SizedBox(height: 6),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF9FAFB),
+              border: Border.all(color: Colors.black12),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text('Contoh teks input kasir', style: MetroTypography.inputText),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildAutoPostingRow() {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Kirim ke server otomatis', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
-                Text('Kirim penjualan secara berkala', style: TextStyle(fontSize: 9, color: Colors.grey)),
+                Text('Kirim ke server otomatis', style: MetroTypography.body.copyWith(fontWeight: FontWeight.bold)),
+                Text('Kirim penjualan secara berkala', style: MetroTypography.caption.copyWith(color: Colors.grey)),
               ],
             ),
           ),
@@ -1335,7 +1382,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                 ),
                 child: Text(
                   '$_autoPostingInterval menit',
-                  style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: MetroColors.secondary),
+                  style: MetroTypography.caption.copyWith(fontWeight: FontWeight.bold, color: MetroColors.secondary),
                 ),
               ),
             ),
@@ -1360,12 +1407,12 @@ class _AdminDashboardState extends State<AdminDashboard> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Expanded(
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Label & ikon metode bayar', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
-                    Text('Sesuaikan tampilan di layar pembayaran', style: TextStyle(fontSize: 9, color: Colors.black38)),
+                    Text('Label & ikon metode bayar', style: MetroTypography.body.copyWith(fontWeight: FontWeight.bold)),
+                    Text('Sesuaikan tampilan di layar pembayaran', style: MetroTypography.caption.copyWith(color: Colors.black38)),
                   ],
                 ),
               ),
@@ -1420,7 +1467,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                     width: 80,
                     child: Text(
                       name,
-                      style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: MetroColors.primary),
+                      style: MetroTypography.caption.copyWith(fontWeight: FontWeight.bold, color: MetroColors.primary),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -1433,7 +1480,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                           border: OutlineInputBorder(),
                           contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 0),
                         ),
-                        style: const TextStyle(fontSize: 11),
+                        style: MetroTypography.inputText,
                         onChanged: (v) => _savePaymentMethodLabel(name, v),
                       ),
                     ),
@@ -1452,8 +1499,8 @@ class _AdminDashboardState extends State<AdminDashboard> {
           child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                  const Text('Tombol uang cepat', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
-                  const Text('Nominal pintasan di layar pembayaran', style: TextStyle(fontSize: 9, color: Colors.black38)),
+                  Text('Tombol uang cepat', style: MetroTypography.body.copyWith(fontWeight: FontWeight.bold)),
+                  Text('Nominal pintasan di layar pembayaran', style: MetroTypography.caption.copyWith(color: Colors.black38)),
                   const SizedBox(height: 16),
                   Wrap(
                       spacing: 8,
@@ -1473,7 +1520,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                                                       controller: controller,
                                                       keyboardType: TextInputType.number,
                                                       decoration: const InputDecoration(border: OutlineInputBorder(), contentPadding: EdgeInsets.symmetric(horizontal: 8)),
-                                                      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                                                      style: MetroTypography.inputText,
                                                       onChanged: (_) => _saveQuickCash(),
                                                   ),
                                               ),
@@ -1511,10 +1558,15 @@ class _AdminDashboardState extends State<AdminDashboard> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
-          Text(subtitle, style: const TextStyle(fontSize: 9, color: Colors.grey)),
-        ]),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title, style: MetroTypography.body.copyWith(fontWeight: FontWeight.bold)),
+              Text(subtitle, style: MetroTypography.caption.copyWith(color: Colors.grey)),
+            ],
+          ),
+        ),
         Switch(value: value, activeColor: MetroColors.primary, onChanged: onChanged),
       ],
     );
@@ -1524,7 +1576,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(color: Colors.black45, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1.2)),
+        Text(label, style: MetroTypography.inputLabel),
         const SizedBox(height: 12),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16),

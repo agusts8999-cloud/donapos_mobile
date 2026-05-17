@@ -72,6 +72,9 @@ import 'package:donapos_mobile/widgets/product_label_final.dart';
 import 'package:donapos_mobile/screens/admin_dashboard.dart';
 import 'package:donapos_mobile/app_route_observer.dart';
 
+/// Pilihan cetak dapur sebelum layar pembayaran.
+enum KitchenPayChoice { cancelled, printYes, skipPrint }
+
 class PosScreen extends StatefulWidget {
   const PosScreen({super.key});
 
@@ -133,11 +136,9 @@ class _PosScreenState extends State<PosScreen> with RouteAware {
   bool _duplicatePrintEnabled = false;
   bool _isDemoMode = false;
   bool _showBillButton = false;
-  bool _showKitchenButton = true;
   bool _showDiscountButton = false;
   bool _attendanceRequired = true;
-  bool _askCustomerNameEnabled = true;
-  bool _autoPayAfterKot = true;
+  bool _askCustomerNameEnabled = false;
   
   // Sale Type Labels Cache
   final Map<String, String> _saleTypeLabels = {};
@@ -153,12 +154,41 @@ class _PosScreenState extends State<PosScreen> with RouteAware {
   String _kotType = 'bluetooth';
   String _kotAddress = '';
   String _kotAlias = 'PRINTER DAPUR';
+  /// Signature keranjang saat KOT terakhir berhasil dicetak (invalid jika isi keranjang berubah).
+  String? _kitchenPrintedCartSignature;
   
   // Secondary Screen
   bool _secondScreenEnabled = false;
   bool _printHoldReceiptEnabled = false;
   bool _isRegistered = true;
   bool _isAdmin = false;
+
+  /// Printer dapur aktif dan alamat/LAN sudah dikonfigurasi.
+  bool get _kitchenPrinterActive {
+    if (!_kotEnabled) return false;
+    return _kotAddress.trim().isNotEmpty;
+  }
+
+  String _cartKitchenSignature() {
+    final parts = <String>[];
+    for (final item in _cartController.cart) {
+      final modIds = item.selectedModifiers.map((m) => m.id).toList()..sort();
+      parts.add('${item.product.id}:${item.qty}:${item.note}:${modIds.join(',')}');
+    }
+    parts.sort();
+    return parts.join('|');
+  }
+
+  bool get _kitchenAlreadyPrintedForCart =>
+      _kitchenPrintedCartSignature != null &&
+      _kitchenPrintedCartSignature == _cartKitchenSignature();
+
+  void _markKitchenPrinted() {
+    if (!mounted) return;
+    setState(() {
+      _kitchenPrintedCartSignature = _cartKitchenSignature();
+    });
+  }
 
   // Transaction State for Receipt
   String _lastPaymentMethod = 'cash';
@@ -365,11 +395,9 @@ class _PosScreenState extends State<PosScreen> with RouteAware {
           _kotAlias = _prefs.getString('kitchen_printer_alias') ?? 'PRINTER DAPUR';
           _secondScreenEnabled = _prefs.getBool('second_screen_enabled') ?? false;
           _showBillButton = _prefs.getBool('show_bill_button') ?? false;
-          _showKitchenButton = _prefs.getBool('show_kitchen_button') ?? false; 
           _showDiscountButton = _prefs.getBool('show_discount_button') ?? false;
           _attendanceRequired = _prefs.getBool('attendance_required') ?? true;
-          _askCustomerNameEnabled = _prefs.getBool('ask_customer_name_enabled') ?? true;
-          _autoPayAfterKot = _prefs.getBool('auto_pay_after_kot') ?? true;
+          _askCustomerNameEnabled = _prefs.getBool('ask_customer_name_enabled') ?? false;
           _isAdmin = _prefs.getBool('last_user_is_admin') ?? false;
       });
 
@@ -475,15 +503,7 @@ class _PosScreenState extends State<PosScreen> with RouteAware {
                                     }
                                     _showReceiptSimulationDialog(isPreview: true);
                                   },
-                                  onKitchenPrintPressed: () {
-                                    if (!_cartController.hasItems) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(content: Text('KERANJANG KOSONG')),
-                                      );
-                                      return;
-                                    }
-                                    _confirmPrintKitchenOrder();
-                                  },
+                                  onKitchenPrintPressed: _printKitchenFromHeader,
                                   onSearchPressed: _openSearchDialog,
                                   onScanPressed: _toggleScanMode,
                                   onCustomerPressed: _showCustomerSelector,
@@ -493,7 +513,7 @@ class _PosScreenState extends State<PosScreen> with RouteAware {
                                   onCalculatorPressed: _showCalculator,
                                   calculatorEnabled: _calculatorEnabled,
                                   billEnabled: _showBillButton,
-                                  kitchenEnabled: _showKitchenButton,
+                                  kitchenEnabled: _kitchenPrinterActive,
                                   discountEnabled: _showDiscountButton,
                                   isScanMode: _isScanMode,
                                   unsyncedCount: unsyncedCount,
@@ -755,6 +775,17 @@ class _PosScreenState extends State<PosScreen> with RouteAware {
     bool hasCustomer = await _ensureCustomerIsSelected();
     if (!hasCustomer) return;
 
+    if (_kitchenPrinterActive && !_kitchenAlreadyPrintedForCart) {
+      final choice = await _promptKitchenBeforePayment();
+      if (choice == KitchenPayChoice.cancelled) return;
+      if (choice == KitchenPayChoice.printYes) {
+        final ok = await _printKitchenOrder();
+        if (!ok || !mounted) return;
+      }
+    }
+
+    if (!mounted) return;
+
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -825,10 +856,6 @@ class _PosScreenState extends State<PosScreen> with RouteAware {
                         const Duration(seconds: 15),
                         onTimeout: () => debugPrint('[POS] Receipt print timeout — skipping.'),
                     );
-                    
-                    await Future.delayed(const Duration(milliseconds: 1000));
-
-                    await _confirmPrintKitchenOrder();
 
                     await Future.delayed(const Duration(milliseconds: 1000));
 
@@ -913,6 +940,7 @@ class _PosScreenState extends State<PosScreen> with RouteAware {
           _activeTransactionId = null;
           _isResuming = false;
           _pax = 0;
+          _kitchenPrintedCartSignature = null;
       });
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Transaksi Berhasil! Sedang Posting...'), duration: Duration(seconds: 1)));
       
@@ -1044,6 +1072,7 @@ class _PosScreenState extends State<PosScreen> with RouteAware {
           _pax = tx['pax'] ?? 0;
           _selectedCustomer = customer;
           _selectedWaiter = waiter;
+          _kitchenPrintedCartSignature = null;
       });
 
 
@@ -1197,6 +1226,7 @@ class _PosScreenState extends State<PosScreen> with RouteAware {
               _isResuming = false;
               _selectedWaiter = null;
               _pax = 0;
+              _kitchenPrintedCartSignature = null;
           });
           await _posProvider.setPriceGroup(null);
           _syncCartConfig();
@@ -1294,6 +1324,7 @@ class _PosScreenState extends State<PosScreen> with RouteAware {
           _changeAmount = 0;
           _activeTransactionId = null;
           _isResuming = false;
+          _kitchenPrintedCartSignature = null;
           _pax = 0;
           _lastTxId = 0;
       });
@@ -1796,126 +1827,268 @@ class _PosScreenState extends State<PosScreen> with RouteAware {
          if (mounted) _loadData();
     });
   }
-  Future<void> _confirmPrintKitchenOrder() async {
-      if (!_cartController.hasItems) return;
-      
-      final String warningText = _kotEnabled 
-          ? 'Yakin akan mencetak pesanan ke dapur sekarang? Instruksi akan langsung dikerjakan oleh bagian dapur.'
-          : 'PRINTER DAPUR SEDANG NON-AKTIF (OFF).\n\nPesanan akan dicetak menggunakan Printer Kasir sebagai cadangan. Lanjutkan?';
-
-      final bool? proceed = await showDialog<bool>(
-          context: context,
-          builder: (ctx) => AlertDialog(
-              title: Text(_kotEnabled ? 'KIRIM KE DAPUR?' : 'CETAK KE KASIR? (KOT OFF)', style: const TextStyle(fontWeight: FontWeight.bold)),
-              content: Text(warningText),
-              actions: [
-                  TextButton(
-                      onPressed: () => Navigator.pop(ctx, false), 
-                      child: Text('BATAL', style: TextStyle(color: Colors.grey.shade600, fontWeight: FontWeight.bold))
-                  ),
-                  ElevatedButton(
-                      onPressed: () => Navigator.pop(ctx, true), 
-                      style: ElevatedButton.styleFrom(
-                          backgroundColor: _kotEnabled ? MetroColors.primary : Colors.orange,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4))
+  Future<KitchenPayChoice> _promptKitchenBeforePayment() async {
+    final lp = Provider.of<LanguageProvider>(context, listen: false);
+    final result = await showDialog<KitchenPayChoice>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(
+          lp.translate('kot_before_pay_title'),
+          style: MetroTypography.h3.copyWith(fontWeight: FontWeight.bold),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              lp.translate('kot_before_pay_message'),
+              style: MetroTypography.body,
+            ),
+            SizedBox(height: 20.sc),
+            Row(
+              children: [
+                Expanded(
+                  child: SizedBox(
+                    height: 48.sc,
+                    child: OutlinedButton(
+                      onPressed: () =>
+                          Navigator.pop(ctx, KitchenPayChoice.skipPrint),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: MetroColors.primary,
+                        side: BorderSide(color: MetroColors.primary, width: 2.sc),
                       ),
-                      child: Text(_kotEnabled ? 'CETAK SEKARANG' : 'LANJUT CETAK KASIR', style: const TextStyle(fontWeight: FontWeight.bold))
+                      child: Text(
+                        lp.translate('kot_before_pay_no'),
+                        style: MetroTypography.button.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
                   ),
+                ),
+                SizedBox(width: 12.sc),
+                Expanded(
+                  child: SizedBox(
+                    height: 48.sc,
+                    child: ElevatedButton(
+                      onPressed: () =>
+                          Navigator.pop(ctx, KitchenPayChoice.printYes),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: MetroColors.primary,
+                        foregroundColor: Colors.white,
+                      ),
+                      child: Text(
+                        lp.translate('kot_before_pay_yes'),
+                        style: MetroTypography.button.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
               ],
-          )
-      );
-
-      if (proceed == true) {
-          await _printKitchenOrder();
-          
-          // FEATURE: Auto Pay after KOT
-          if (_autoPayAfterKot && mounted) {
-              await Future.delayed(const Duration(milliseconds: 500));
-              _showPaymentDialog();
-          }
-      }
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, KitchenPayChoice.cancelled),
+            child: Text(lp.translate('cancel')),
+          ),
+        ],
+      ),
+    );
+    return result ?? KitchenPayChoice.cancelled;
   }
 
-  Future<void> _printKitchenOrder() async {
-    if (_isPrinting) return;
+  Future<void> _printKitchenFromHeader() async {
+    if (!_cartController.hasItems) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Keranjang kosong')),
+      );
+      return;
+    }
+
+    if (!_kitchenPrinterActive) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Printer dapur belum aktif. Atur di menu printer dapur.'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    final lp = Provider.of<LanguageProvider>(context, listen: false);
+    final bool? proceed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(
+          lp.translate('kitchen'),
+          style: MetroTypography.h3.copyWith(fontWeight: FontWeight.bold),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(lp.translate('kot_header_confirm_message'), style: MetroTypography.body),
+            SizedBox(height: 20.sc),
+            Row(
+              children: [
+                Expanded(
+                  child: SizedBox(
+                    height: 48.sc,
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(ctx, false),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: MetroColors.primary,
+                        side: BorderSide(color: MetroColors.primary, width: 2.sc),
+                      ),
+                      child: Text(
+                        lp.translate('cancel'),
+                        style: MetroTypography.button.copyWith(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 12.sc),
+                Expanded(
+                  child: SizedBox(
+                    height: 48.sc,
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pop(ctx, true),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: MetroColors.primary,
+                        foregroundColor: Colors.white,
+                      ),
+                      child: Text(
+                        lp.translate('kot_before_pay_yes'),
+                        style: MetroTypography.button.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (proceed == true) {
+      final ok = await _printKitchenOrder();
+      if (ok && mounted) {
+        await _showPaymentDialog();
+      }
+    }
+  }
+
+  Future<bool> _printKitchenOrder() async {
+    if (_isPrinting) return false;
     setState(() => _isPrinting = true);
 
     try {
       if (!_kotEnabled) {
-         await _executeKitchenPrintBT(printer); // Fallback to current behavior if not explicitly configured
-         return;
+        await _executeKitchenPrintBT(printer);
+        _markKitchenPrinted();
+        return true;
       }
 
       if (_kotType == 'bluetooth') {
-          final String targetAddress = _kotAddress;
+        final String targetAddress = _kotAddress;
 
-          if (targetAddress.isEmpty) {
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('ALAMAT PRINTER DAPUR BELUM DISET (KOSONG)'), backgroundColor: Colors.red));
-              return;
+        if (targetAddress.isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('ALAMAT PRINTER DAPUR BELUM DISET (KOSONG)'),
+              backgroundColor: Colors.red,
+            ),
+          );
+          return false;
+        }
+
+        final cashierAddress = _selectedDevice?.address;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Memutus koneksi... Menuju Dapur: $targetAddress'),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+
+        await printer.disconnect();
+        _currentConnectedMac = null;
+        await Future.delayed(const Duration(milliseconds: 2000));
+
+        final devs = await printer.getBondedDevices();
+        final d = devs.firstWhere(
+          (element) => element.address == targetAddress,
+          orElse: () => throw "Printer Dapur ($targetAddress) tidak ditemukan di daftar Paired Bluetooth.",
+        );
+
+        bool connected = await printer.connect(d) ?? false;
+        if (!connected) {
+          await Future.delayed(const Duration(milliseconds: 1500));
+          connected = await printer.connect(d) ?? false;
+        }
+        if (connected) _currentConnectedMac = targetAddress;
+
+        await Future.delayed(const Duration(milliseconds: 1000));
+
+        try {
+          if (await printer.isConnected ?? false) {
+            await _executeKitchenPrintBT(printer);
+            await Future.delayed(const Duration(milliseconds: 1500));
           } else {
-              final cashierAddress = _selectedDevice?.address;
-              
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Memutus koneksi... Menuju Dapur: $targetAddress'), duration: const Duration(seconds: 2)));
-              
-              // 1. Force Disconnect
-              await printer.disconnect();
-              _currentConnectedMac = null;
-              await Future.delayed(const Duration(milliseconds: 2000));
-              
-              // 2. Connect to Kitchen MAC
-              final devs = await printer.getBondedDevices();
-              final d = devs.firstWhere((element) => element.address == targetAddress, orElse: () => throw "Printer Dapur ($targetAddress) tidak ditemukan di daftar Paired Bluetooth.");
-              
-              bool success = await printer.connect(d) ?? false;
-              if (!success) {
-                  await Future.delayed(const Duration(milliseconds: 1500));
-                  success = await printer.connect(d) ?? false;
-              }
-              if (success) _currentConnectedMac = targetAddress;
-              
-              await Future.delayed(const Duration(milliseconds: 1000));
-              
-              try {
-                  // 3. Print
-                  if (await printer.isConnected ?? false) {
-                      await _executeKitchenPrintBT(printer);
-                      await Future.delayed(const Duration(milliseconds: 1500));
-                  } else {
-                      throw "Gagal terhubung ke Printer Dapur ($targetAddress)";
-                  }
-              } finally {
-                  // 4. Revert
-                  await printer.disconnect();
-                  _currentConnectedMac = null;
-                  await Future.delayed(const Duration(milliseconds: 2000));
-                  if (cashierAddress != null) {
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Kembali ke Kasir...'), duration: Duration(seconds: 1)));
-                      final devsAfter = await printer.getBondedDevices();
-                      try {
-                          final c = devsAfter.firstWhere((element) => element.address == cashierAddress);
-                          await printer.connect(c);
-                          _currentConnectedMac = cashierAddress;
-                      } catch (e) {
-                          debugPrint("Gagal kembali ke kasir: $e");
-                      }
-                  }
-              }
+            throw "Gagal terhubung ke Printer Dapur ($targetAddress)";
           }
-      }
-      else if (_kotType == 'lan') {
-          if (_kotAddress.isEmpty) {
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('IP PRINTER DAPUR BELUM DIATUR')));
-              return;
+        } finally {
+          await printer.disconnect();
+          _currentConnectedMac = null;
+          await Future.delayed(const Duration(milliseconds: 2000));
+          if (cashierAddress != null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Kembali ke Kasir...'), duration: Duration(seconds: 1)),
+            );
+            final devsAfter = await printer.getBondedDevices();
+            try {
+              final c = devsAfter.firstWhere((element) => element.address == cashierAddress);
+              await printer.connect(c);
+              _currentConnectedMac = cashierAddress;
+            } catch (e) {
+              debugPrint("Gagal kembali ke kasir: $e");
+            }
           }
-          await _executeKitchenPrintLAN(_kotAddress);
+        }
+        _markKitchenPrinted();
+        return true;
+      } else if (_kotType == 'lan') {
+        if (_kotAddress.isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('IP PRINTER DAPUR BELUM DIATUR')),
+          );
+          return false;
+        }
+        await _executeKitchenPrintLAN(_kotAddress);
+        _markKitchenPrinted();
+        return true;
       } else {
-          await _executeKitchenPrintBT(printer);
+        await _executeKitchenPrintBT(printer);
+        _markKitchenPrinted();
+        return true;
       }
     } catch (e) {
       debugPrint("Kitchen Printing Error: $e");
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('GAGAL CETAK DAPUR: $e'), backgroundColor: Colors.red));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('GAGAL CETAK DAPUR: $e'), backgroundColor: Colors.red),
+        );
+      }
+      return false;
     } finally {
       if (mounted) setState(() => _isPrinting = false);
     }
