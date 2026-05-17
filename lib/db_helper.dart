@@ -2060,6 +2060,12 @@ class DatabaseHelper {
 
   // --- Attendances ---
   Future<int> clockIn(int userId, String username, {String? ip, String? lat, String? long, String? address}) async {
+    final existing = await getActiveAttendance(userId);
+    if (existing != null) {
+      throw StateError(
+        'Anda masih dalam status bertugas. Lakukan clock-out terlebih dahulu.',
+      );
+    }
     final db = await instance.database;
     return await db.insert('attendances', {
       'user_id': userId,
@@ -2076,6 +2082,10 @@ class DatabaseHelper {
   }
 
   Future<void> clockOut(int userId, {String? lat, String? long, String? address}) async {
+    final active = await getActiveAttendance(userId);
+    if (active == null) {
+      throw StateError('Tidak ada absensi aktif untuk di-clock-out.');
+    }
     final db = await instance.database;
     await db.update('attendances', {
       'clock_out': DateTime.now().toIso8601String(),
@@ -2084,15 +2094,18 @@ class DatabaseHelper {
       'clock_out_latitude': lat,
       'clock_out_longitude': long,
       'clock_out_address': address
-    }, where: 'user_id = ? AND status = ?', whereArgs: [userId, 'active']);
+    }, where: 'id = ?', whereArgs: [active['id']]);
   }
 
   Future<Map<String, dynamic>?> getActiveAttendance(int userId) async {
     final db = await instance.database;
-    final res = await db.query('attendances',
+    final res = await db.query(
+      'attendances',
       where: 'user_id = ? AND status = ?',
       whereArgs: [userId, 'active'],
-      limit: 1);
+      orderBy: 'id DESC',
+      limit: 1,
+    );
     return res.isNotEmpty ? res.first : null;
   }
 
@@ -2110,7 +2123,11 @@ class DatabaseHelper {
 
   Future<List<Map<String, dynamic>>> getUnsyncedAttendances() async {
     final db = await instance.database;
-    return await db.query('attendances', where: 'synced = 0');
+    return await db.query(
+      'attendances',
+      where: 'synced = 0',
+      orderBy: 'id ASC',
+    );
   }
 
   Future<void> markAttendanceSynced(int id) async {
@@ -2380,6 +2397,7 @@ class DatabaseHelper {
   // Emergency Product and Local Staging functions removed
 
   static const String _syncLockKey = 'sync_lock_expires_ms';
+  static const String attendanceSyncLockKey = 'attendance_sync_lock_expires_ms';
 
   Future<void> _ensureAppSettingsTable(Database db) async {
     await db.execute('''
@@ -2393,6 +2411,7 @@ class DatabaseHelper {
   /// Cross-isolate friendly sync mutex (foreground + Workmanager).
   Future<bool> tryAcquireSyncLock({
     Duration ttl = const Duration(minutes: 5),
+    String lockKey = _syncLockKey,
   }) async {
     final db = await database;
     await _ensureAppSettingsTable(db);
@@ -2400,7 +2419,7 @@ class DatabaseHelper {
     final rows = await db.query(
       'app_settings',
       where: 'key = ?',
-      whereArgs: [_syncLockKey],
+      whereArgs: [lockKey],
     );
     if (rows.isNotEmpty) {
       final expires =
@@ -2410,7 +2429,7 @@ class DatabaseHelper {
     await db.insert(
       'app_settings',
       {
-        'key': _syncLockKey,
+        'key': lockKey,
         'value': '${now + ttl.inMilliseconds}',
       },
       conflictAlgorithm: ConflictAlgorithm.replace,
@@ -2418,13 +2437,13 @@ class DatabaseHelper {
     return true;
   }
 
-  Future<void> releaseSyncLock() async {
+  Future<void> releaseSyncLock({String lockKey = _syncLockKey}) async {
     final db = await database;
     await _ensureAppSettingsTable(db);
     await db.delete(
       'app_settings',
       where: 'key = ?',
-      whereArgs: [_syncLockKey],
+      whereArgs: [lockKey],
     );
   }
 }

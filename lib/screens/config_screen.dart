@@ -23,6 +23,7 @@ import 'package:http/http.dart' as http;
 import 'package:donapos_mobile/screens/login_screen.dart';
 import 'package:donapos_mobile/sync_service.dart';
 import 'package:donapos_mobile/utils_scaler.dart';
+import 'package:donapos_mobile/utils/activation_messages.dart';
 
 class ConfigScreen extends StatefulWidget {
   const ConfigScreen({super.key});
@@ -40,6 +41,10 @@ class _ConfigScreenState extends State<ConfigScreen> {
   bool _isActivated = false;
   final List<Map<String, dynamic>> _logs = []; // Activation Log
   String _serverMode = 'server1';
+  int _wizardStep = 0;
+  bool _showAdvancedMode = false;
+  bool _connectionVerified = false;
+  String? _connectionStatusMessage;
 
   // Controllers
   final _urlController = TextEditingController();
@@ -314,15 +319,138 @@ class _ConfigScreenState extends State<ConfigScreen> {
     }
   }
 
-  Future<void> _activateByCode() async {
+  String _normalizedActivationCode() {
+    return _activationCodeController.text.replaceAll('-', '').trim().toUpperCase();
+  }
+
+  String _serverDisplayLabel() {
+    switch (_serverMode) {
+      case 'server1':
+        return 'Server DonaPOS Utama';
+      case 'server2':
+        return 'Server DonaPOS Alternatif';
+      default:
+        return _urlController.text.trim().isEmpty
+            ? 'Server kustom'
+            : _urlController.text.trim();
+    }
+  }
+
+  Future<void> _wizardCheckConnection() async {
+    if (_urlController.text.trim().isEmpty) {
+      showAppModal(
+        context,
+        title: 'SERVER BELUM DIPILIH',
+        message: ActivationMessages.emptyUrl,
+        isError: true,
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+    _addLog('MENGECEK KONEKSI KE SERVER...');
+    final result = await _apiService.validateBaseUrl(_urlController.text.trim());
+    setState(() {
+      _isLoading = false;
+      _connectionVerified = result['valid'] == true;
+      _connectionStatusMessage = result['message']?.toString();
+    });
+
+    if (result['valid'] == true) {
+      _addLog('KONEKSI SERVER OK.', isSuccess: true);
+    } else {
+      _addLog('KONEKSI GAGAL: ${result['message']}', isError: true);
+    }
+
+    if (!mounted) return;
+    showAppModal(
+      context,
+      title: result['valid'] == true ? 'KONEKSI BERHASIL' : 'KONEKSI GAGAL',
+      message: ActivationMessages.userMessage(_connectionStatusMessage),
+      isError: result['valid'] != true,
+    );
+  }
+
+  Future<void> _wizardNext() async {
+    if (_wizardStep == 0) {
+      if (_urlController.text.trim().isEmpty) {
+        showAppModal(
+          context,
+          title: 'SERVER BELUM DIPILIH',
+          message: ActivationMessages.emptyUrl,
+          isError: true,
+        );
+        return;
+      }
+      setState(() => _wizardStep = 1);
+      return;
+    }
+
+    if (_wizardStep == 1) {
+      final code = _normalizedActivationCode();
+      if (code.length != 9) {
+        showAppModal(
+          context,
+          title: 'KODE BELUM LENGKAP',
+          message: ActivationMessages.invalidCodeFormat,
+          isError: true,
+        );
+        return;
+      }
+      if (!_connectionVerified) {
+        showAppModal(
+          context,
+          title: 'CEK KONEKSI DULU',
+          message:
+              'Tekan tombol "Cek koneksi" untuk memastikan tablet terhubung ke server sebelum melanjutkan.',
+          isError: true,
+        );
+        return;
+      }
+      setState(() => _wizardStep = 2);
+    }
+  }
+
+  void _wizardBack() {
+    if (_wizardStep <= 0) return;
+    setState(() => _wizardStep -= 1);
+  }
+
+  Future<void> _confirmAndActivate() async {
+    await _activateByCode(skipConfirm: false);
+  }
+
+  Future<void> _activateByCode({bool skipConfirm = false}) async {
     if (_urlController.text.isEmpty || _activationCodeController.text.isEmpty) {
       showAppModal(
         context, 
         title: 'DATA KURANG', 
-        message: 'MOHON ISI BASE URL DAN KODE AKTIVASI.', 
+        message: 'Pilih server dan masukkan kode aktivasi dari admin DonaPOS.', 
         isError: true
       );
       return;
+    }
+
+    final code = _normalizedActivationCode();
+    if (code.length != 9) {
+      showAppModal(
+        context,
+        title: 'KODE BELUM LENGKAP',
+        message: ActivationMessages.invalidCodeFormat,
+        isError: true,
+      );
+      return;
+    }
+
+    if (!skipConfirm) {
+      final confirm = await showAppConfirm(
+        context,
+        title: 'LANJUTKAN AKTIVASI?',
+        message:
+            'Aktivasi akan menghapus data lama di tablet ini dan menghubungkan perangkat ke server bisnis Anda. Lanjutkan?',
+        confirmLabel: 'YA, AKTIVASI SEKARANG',
+      );
+      if (confirm != true) return;
     }
 
     setState(() => _isLoading = true);
@@ -376,10 +504,10 @@ class _ConfigScreenState extends State<ConfigScreen> {
 
     try {
       final result = await _apiService.activateWithCode(
-        _urlController.text.trim(), 
-        _activationCodeController.text.trim(),
+        _urlController.text.trim(),
+        code,
         locationInfo: sentLocationInfo,
-        ip: finalIp
+        ip: finalIp,
       );
 
       if (result['success']) {
@@ -475,7 +603,7 @@ class _ConfigScreenState extends State<ConfigScreen> {
         }
 
       } else {
-        throw result['message'] ?? 'Gagal aktivasi';
+        throw result['message'] ?? ActivationMessages.genericFailure;
       }
 
     } catch (e) {
@@ -485,7 +613,7 @@ class _ConfigScreenState extends State<ConfigScreen> {
         showAppModal(
           context, 
           title: 'AKTIVASI GAGAL', 
-          message: e.toString(), 
+          message: ActivationMessages.userMessage(e.toString()), 
           isError: true
         );
       }
@@ -557,7 +685,23 @@ class _ConfigScreenState extends State<ConfigScreen> {
                     SizedBox(height: 16.sc),
                     Text('Pilih langkah selanjutnya:', style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w700, color: Colors.black54)),
                     SizedBox(height: 16.sc),
-                    // Option 1: Admin Panel
+                    _choiceButton(
+                      ctx: ctx,
+                      icon: Icons.people_alt_rounded,
+                      title: 'MASUK SEBAGAI KASIR',
+                      subtitle: 'Disarankan — pilih kasir dan masukkan PIN.',
+                      color: MetroColors.secondary,
+                      isPrimary: true,
+                      onTap: () {
+                        Navigator.pop(ctx);
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(builder: (_) => const LoginScreen()),
+                          (route) => false,
+                        );
+                      },
+                    ),
+                    SizedBox(height: 10.sc),
                     _choiceButton(
                       ctx: ctx,
                       icon: Icons.admin_panel_settings_rounded,
@@ -574,24 +718,6 @@ class _ConfigScreenState extends State<ConfigScreen> {
                       },
                     ),
                     SizedBox(height: 10.sc),
-                    // Option 2: User List
-                    _choiceButton(
-                      ctx: ctx,
-                      icon: Icons.people_alt_rounded,
-                      title: 'MASUK SEBAGAI KASIR',
-                      subtitle: 'Pilih user dan masukkan PIN.',
-                      color: MetroColors.secondary,
-                      onTap: () {
-                        Navigator.pop(ctx);
-                        Navigator.pushAndRemoveUntil(
-                          context,
-                          MaterialPageRoute(builder: (_) => const LoginScreen()),
-                          (route) => false,
-                        );
-                      },
-                    ),
-                    SizedBox(height: 10.sc),
-                    // Option 3: Close App
                     _choiceButton(
                       ctx: ctx,
                       icon: Icons.power_settings_new_rounded,
@@ -633,6 +759,7 @@ class _ConfigScreenState extends State<ConfigScreen> {
     required String subtitle,
     required Color color,
     required VoidCallback onTap,
+    bool isPrimary = false,
   }) {
     return Material(
       color: Colors.transparent,
@@ -642,7 +769,11 @@ class _ConfigScreenState extends State<ConfigScreen> {
         child: Container(
           padding: EdgeInsets.symmetric(horizontal: 16.sc, vertical: 14.sc),
           decoration: BoxDecoration(
-            border: Border.all(color: color.withOpacity(0.3), width: 1.5),
+            color: isPrimary ? color : null,
+            border: Border.all(
+              color: isPrimary ? color : color.withOpacity(0.3),
+              width: isPrimary ? 0 : 1.5,
+            ),
             borderRadius: BorderRadius.circular(8.sc),
           ),
           child: Row(
@@ -650,23 +781,42 @@ class _ConfigScreenState extends State<ConfigScreen> {
               Container(
                 width: 40.sc, height: 40.sc,
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
+                  color: isPrimary ? Colors.white.withOpacity(0.2) : color.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8.sc),
                 ),
-                child: Icon(icon, color: color, size: 22.sc),
+                child: Icon(icon, color: isPrimary ? Colors.white : color, size: 22.sc),
               ),
               SizedBox(width: 14.sc),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(title, style: TextStyle(fontWeight: FontWeight.w900, fontSize: 12.sp, color: color, letterSpacing: 0.5.sc)),
+                    Text(
+                      title,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w900,
+                        fontSize: 12.sp,
+                        color: isPrimary ? Colors.white : color,
+                        letterSpacing: 0.5.sc,
+                      ),
+                    ),
                     SizedBox(height: 2.sc),
-                    Text(subtitle, style: TextStyle(fontSize: 10.sp, color: Colors.black45, fontWeight: FontWeight.w600)),
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        fontSize: 10.sp,
+                        color: isPrimary ? Colors.white70 : Colors.black45,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ],
                 ),
               ),
-              Icon(Icons.chevron_right_rounded, color: color.withOpacity(0.5), size: 24.sc),
+              Icon(
+                Icons.chevron_right_rounded,
+                color: isPrimary ? Colors.white70 : color.withOpacity(0.5),
+                size: 24.sc,
+              ),
             ],
           ),
         ),
@@ -856,290 +1006,559 @@ class _ConfigScreenState extends State<ConfigScreen> {
         children: [
           _buildInfoHero(),
           const SizedBox(height: 32),
-          
-          // ROW 1: DEMO & TRAINING
-          AbsorbPointer(
-            absorbing: _isActivated,
-            child: Opacity(
-              opacity: _isActivated ? 0.5 : 1.0,
-              child: Row(
-                children: [
-                  Expanded(
-                    child: _buildFeatureCard(
-                      title: 'FITUR DEMO / TRAINING MODE',
-                      subtitle: 'Latihan tanpa terhubung ke server',
-                      icon: Icons.model_training,
-                      color: Colors.orange,
-                      isActive: _isDemoMode,
-                      onTap: () => _toggleDemoMode(!_isDemoMode),
-                      trailing: Switch(
-                          value: _isDemoMode, 
-                          onChanged: _isActivated ? null : _toggleDemoMode,
-                          activeColor: Colors.orange,
-                      ),
-                      bottom: !_isDemoMode ? Row(
-                        children: [
-                            SizedBox(
-                                height: 24,
-                                width: 24,
-                                child: Checkbox(
-                                    value: _useCurrentAsDemo, 
-                                    activeColor: Colors.orange,
-                                    onChanged: _isActivated ? null : (v) => setState(() => _useCurrentAsDemo = v ?? false)
-                                ),
-                            ),
-                            const SizedBox(width: 8),
-                            const Flexible(
-                                child: Text('GUNAKAN DATA SAAT INI', style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.bold, color: Colors.blueGrey))
-                            )
-                        ],
-                      ) : null,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: _buildFeatureCard(
-                      title: 'AKTIVASI DATA DEMO',
-                      subtitle: 'Info hubungi vendor',
-                      icon: Icons.auto_awesome,
-                      color: Colors.blue,
-                      onTap: _openDemoWebsite,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 32),
-
-          // ROW 2: ACTIVATION
-          if (_isActivated) 
-            Container(
-              padding: const EdgeInsets.all(24),
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 20, offset: const Offset(0, 8))],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  const Icon(Icons.lock, size: 64, color: Colors.green),
-                  const SizedBox(height: 16),
-                  const Text('PERANGKAT TELAH DIAKTIVASI', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: MetroColors.primary)),
-                  const SizedBox(height: 8),
-                  const Text('Perangkat ini sudah terhubung ke server secara aman. Untuk mencegah kehilangan data akibat perubahan konfigurasi yang tidak disengaja, fitur aktivasi telah dikunci.', textAlign: TextAlign.center, style: TextStyle(color: Colors.black54)),
-                  const SizedBox(height: 24),
-                  const Text('JIKA ANDA INGIN MENGGANTI KONEKSI ATAU MERESET PERANGKAT, HARAP UNINSTALL APLIKASI DAN INSTALL KEMBALI.', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold, color: MetroColors.error)),
-                ],
-              ),
-            )
-          else
-            Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 20, offset: const Offset(0, 8))],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('PILIH SERVER (BASE URL)', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 12, letterSpacing: 1, color: Colors.black38)),
-                const SizedBox(height: 8),
-                DropdownButtonFormField<String>(
-                  value: _serverMode,
-                  decoration: InputDecoration(
-                    fillColor: const Color(0xFFF9FAFB),
-                    filled: true,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
-                  ),
-                  items: const [
-                    DropdownMenuItem(value: 'server1', child: Text('donapos.serverzone.web.id', style: TextStyle(fontWeight: FontWeight.bold))),
-                    DropdownMenuItem(value: 'server2', child: Text('app.donapos.biz.id', style: TextStyle(fontWeight: FontWeight.bold))),
-                    DropdownMenuItem(value: 'custom', child: Text('Kustom (https://...)', style: TextStyle(fontWeight: FontWeight.bold))),
-                  ],
-                  onChanged: (val) {
-                    setState(() {
-                      _serverMode = val!;
-                      if (_serverMode == 'server1') {
-                        _urlController.text = 'https://donapos.serverzone.web.id/public';
-                      } else if (_serverMode == 'server2') {
-                        _urlController.text = 'https://app.donapos.biz.id/public';
-                      } else if (_urlController.text == 'https://donapos.serverzone.web.id/public' || _urlController.text == 'https://app.donapos.biz.id/public') {
-                        _urlController.text = ''; // Kosongkan agar bisa diisi custom
-                      }
-                    });
-                  },
+          if (_isActivated)
+            _buildActivatedLockCard()
+          else ...[
+            _buildActivationWizard(),
+            const SizedBox(height: 16),
+            Center(
+              child: TextButton.icon(
+                onPressed: () => setState(() => _showAdvancedMode = !_showAdvancedMode),
+                icon: Icon(
+                  _showAdvancedMode ? Icons.expand_less : Icons.build_circle_outlined,
+                  size: 18,
                 ),
-                if (_serverMode == 'custom') ...[
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: _urlController,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                    decoration: InputDecoration(
-                      hintText: 'https://...',
-                      fillColor: const Color(0xFFF9FAFB),
-                      filled: true,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
-                    ),
-                  )
-                ],
-                const SizedBox(height: 16),
-                
-                const Text('KODE AKTIVASI', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 12, letterSpacing: 1, color: Colors.black38)),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: _activationCodeController,
-                        inputFormatters: [ActivationCodeFormatter()],
-                        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, letterSpacing: 4, color: MetroColors.primary),
-                        textAlign: TextAlign.center,
-                        decoration: InputDecoration(
-                          hintText: 'XXX-XXX-XXX',
-                          hintStyle: TextStyle(color: Colors.grey.shade300),
-                          fillColor: const Color(0xFFF9FAFB),
-                          filled: true,
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                
-                // Location Note Input
-                const Text('NAMA LOKASI / KETERANGAN PERANGKAT (OPSIONAL)', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 12, letterSpacing: 1, color: Colors.black38)),
-                const SizedBox(height: 8),
-                TextField(
-                   controller: _noteController,
-                   style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black),
-                   decoration: InputDecoration(
-                     hintText: 'Contoh: Kasir Depan, Tablet Gudang, dll.',
-                     hintStyle: TextStyle(color: Colors.grey.shade300),
-                     fillColor: const Color(0xFFF9FAFB),
-                     filled: true,
-                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
-                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12)
-                   ),
-                ),
-                const SizedBox(height: 24),
-                
-                Row(
-                  children: [
-                    Expanded(
-                      child: SizedBox(
-                        height: 64,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: MetroColors.primary,
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                            padding: const EdgeInsets.symmetric(horizontal: 32),
-                          ),
-                          onPressed: _activateByCode,
-                          child: const Text('AKTIVASI', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16)),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                const Row(
-                  children: [
-                    Icon(Icons.lock_outline, size: 14, color: Colors.grey),
-                    SizedBox(width: 8),
-                    Text('Masukan kode dari DonaPOS Aktivasi atau Admin Anda.', style: TextStyle(fontSize: 11, color: Colors.grey)),
-                  ],
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 32),
-
-          // ROW 3: RESET / FINALIZATION
-          AbsorbPointer(
-            absorbing: _isActivated,
-            child: Opacity(
-              opacity: _isActivated ? 0.5 : 1.0,
-              child: Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: MetroColors.error.withOpacity(0.05),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: MetroColors.error.withOpacity(0.1)),
-                ),
-                child: Row(
-                  children: [
-                    const Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('UPDATE & HAPUS SEMUA DATA', style: TextStyle(fontWeight: FontWeight.w900, color: MetroColors.error, fontSize: 14)),
-                          SizedBox(height: 4),
-                          Text('Tindakan ini akan mereset aplikasi ke kondisi pabrik.', style: TextStyle(fontSize: 12, color: Colors.redAccent)),
-                        ],
-                      ),
-                    ),
-                    ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: MetroColors.error,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                      ),
-                      onPressed: _isActivated ? null : _finalizeSetup,
-                      icon: const Icon(Icons.delete_forever),
-                      label: const Text('RESET TOTAL', style: TextStyle(fontWeight: FontWeight.bold)),
-                    ),
-                  ],
+                label: Text(
+                  _showAdvancedMode
+                      ? 'Sembunyikan pengaturan lanjutan'
+                      : 'Pengaturan lanjutan (untuk teknisi)',
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
                 ),
               ),
             ),
-          ),
-
-          const SizedBox(height: 48),
-          
-          // TECHNICAL INFO (EXPANDABLE)
-          AbsorbPointer(
-            absorbing: _isActivated,
-            child: Opacity(
-              opacity: _isActivated ? 0.5 : 1.0,
-              child: ExpansionTile(
-                title: const Text('INFORMASI TEKNIS SERVER', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: Colors.grey)),
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(24),
-                    color: Colors.black.withOpacity(0.02),
-                    child: Column(
-                      children: [
-                        _buildField('BASE URL', _urlController),
-                        const SizedBox(height: 20),
-                        _buildField('CLIENT ID', _clientIdController),
-                        const SizedBox(height: 20),
-                        _buildField('CLIENT SECRET', _clientSecretController),
-                        const SizedBox(height: 20),
-                        _buildField('LOCATION ID', _locationIdController),
-                        const SizedBox(height: 24),
-                        const Divider(),
-                        const SizedBox(height: 16),
-                        _buildStaticInfo('NAMA BISNIS', _businessNameController.text),
-                        _buildStaticInfo('NAMA LOKASI/OUTLET', _locationNameController.text),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+            if (_showAdvancedMode) ...[
+              const SizedBox(height: 8),
+              _buildAdvancedOptionsSection(),
+            ],
+          ],
           const SizedBox(height: 100),
         ],
       ),
+    );
+  }
+
+  Widget _buildActivatedLockCard() {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          const Icon(Icons.lock, size: 64, color: Colors.green),
+          const SizedBox(height: 16),
+          const Text(
+            'PERANGKAT TELAH DIAKTIVASI',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w900,
+              color: MetroColors.primary,
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Perangkat ini sudah terhubung ke server secara aman. Untuk mencegah kehilangan data akibat perubahan konfigurasi yang tidak disengaja, fitur aktivasi telah dikunci.',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.black54),
+          ),
+          const SizedBox(height: 24),
+          const Text(
+            'JIKA ANDA INGIN MENGGANTI KONEKSI ATAU MERESET PERANGKAT, HARAP UNINSTALL APLIKASI DAN INSTALL KEMBALI.',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontWeight: FontWeight.bold, color: MetroColors.error),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActivationWizard() {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text(
+                'Langkah ${_wizardStep + 1} dari 3',
+                style: const TextStyle(
+                  fontWeight: FontWeight.w900,
+                  fontSize: 12,
+                  color: MetroColors.primary,
+                  letterSpacing: 1,
+                ),
+              ),
+              const Spacer(),
+              ...List.generate(3, (i) {
+                final active = i <= _wizardStep;
+                return Container(
+                  width: 28,
+                  height: 4,
+                  margin: const EdgeInsets.only(left: 4),
+                  decoration: BoxDecoration(
+                    color: active ? MetroColors.primary : Colors.black12,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                );
+              }),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            _wizardStep == 0
+                ? 'Pilih server bisnis Anda'
+                : _wizardStep == 1
+                    ? 'Masukkan kode aktivasi'
+                    : 'Konfirmasi dan aktivasi',
+            style: const TextStyle(
+              fontWeight: FontWeight.w900,
+              fontSize: 18,
+              color: MetroColors.text,
+            ),
+          ),
+          const SizedBox(height: 20),
+          if (_wizardStep == 0) _buildWizardStep1(),
+          if (_wizardStep == 1) _buildWizardStep2(),
+          if (_wizardStep == 2) _buildWizardStep3(),
+          const SizedBox(height: 24),
+          Row(
+            children: [
+              if (_wizardStep > 0)
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: _wizardBack,
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                    ),
+                    child: const Text('KEMBALI', style: TextStyle(fontWeight: FontWeight.w900)),
+                  ),
+                ),
+              if (_wizardStep > 0) const SizedBox(width: 12),
+              Expanded(
+                flex: 2,
+                child: ElevatedButton(
+                  onPressed: _wizardStep < 2 ? _wizardNext : _confirmAndActivate,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: MetroColors.primary,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                  child: Text(
+                    _wizardStep < 2 ? 'LANJUT' : 'AKTIVASI SEKARANG',
+                    style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 15),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWizardStep1() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Pilih server tempat data bisnis Anda disimpan.',
+          style: TextStyle(color: Colors.black54, fontSize: 13, height: 1.4),
+        ),
+        const SizedBox(height: 16),
+        DropdownButtonFormField<String>(
+          value: _serverMode,
+          decoration: InputDecoration(
+            fillColor: const Color(0xFFF9FAFB),
+            filled: true,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide.none,
+            ),
+          ),
+          items: const [
+            DropdownMenuItem(
+              value: 'server1',
+              child: Text('Server DonaPOS Utama', style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+            DropdownMenuItem(
+              value: 'server2',
+              child: Text('Server DonaPOS Alternatif', style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+            DropdownMenuItem(
+              value: 'custom',
+              child: Text('Lainnya (alamat khusus)', style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ],
+          onChanged: (val) {
+            setState(() {
+              _serverMode = val!;
+              _connectionVerified = false;
+              _connectionStatusMessage = null;
+              if (_serverMode == 'server1') {
+                _urlController.text = 'https://donapos.serverzone.web.id/public';
+              } else if (_serverMode == 'server2') {
+                _urlController.text = 'https://app.donapos.biz.id/public';
+              } else if (_urlController.text ==
+                      'https://donapos.serverzone.web.id/public' ||
+                  _urlController.text == 'https://app.donapos.biz.id/public') {
+                _urlController.text = '';
+              }
+            });
+          },
+        ),
+        if (_serverMode == 'custom') ...[
+          const SizedBox(height: 12),
+          TextField(
+            controller: _urlController,
+            onChanged: (_) => setState(() {
+              _connectionVerified = false;
+              _connectionStatusMessage = null;
+            }),
+            style: const TextStyle(fontWeight: FontWeight.bold),
+            decoration: InputDecoration(
+              hintText: 'https://alamat-server-anda/public',
+              fillColor: const Color(0xFFF9FAFB),
+              filled: true,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide.none,
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildWizardStep2() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Masukkan kode 9 karakter dari admin atau backoffice DonaPOS.',
+          style: TextStyle(color: Colors.black54, fontSize: 13, height: 1.4),
+        ),
+        const SizedBox(height: 16),
+        TextField(
+          controller: _activationCodeController,
+          inputFormatters: [ActivationCodeFormatter()],
+          style: const TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.w900,
+            letterSpacing: 4,
+            color: MetroColors.primary,
+          ),
+          textAlign: TextAlign.center,
+          decoration: InputDecoration(
+            hintText: 'XXX-XXX-XXX',
+            hintStyle: TextStyle(color: Colors.grey.shade300),
+            fillColor: const Color(0xFFF9FAFB),
+            filled: true,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide.none,
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton.icon(
+            onPressed: _isLoading ? null : _wizardCheckConnection,
+            icon: const Icon(Icons.wifi_tethering),
+            label: const Text(
+              'CEK KONEKSI',
+              style: TextStyle(fontWeight: FontWeight.w900),
+            ),
+            style: OutlinedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 14),
+            ),
+          ),
+        ),
+        if (_connectionStatusMessage != null) ...[
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Icon(
+                _connectionVerified ? Icons.check_circle : Icons.error_outline,
+                color: _connectionVerified ? Colors.green : MetroColors.error,
+                size: 18,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  ActivationMessages.userMessage(_connectionStatusMessage),
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: _connectionVerified ? Colors.green.shade800 : MetroColors.error,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildWizardStep3() {
+    final code = _normalizedActivationCode();
+    final masked = code.length >= 3
+        ? '${code.substring(0, 3)}-***-***'
+        : '—';
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Periksa ringkasan di bawah. Setelah aktivasi, data lama di tablet akan diganti dengan data dari server.',
+          style: TextStyle(color: Colors.black54, fontSize: 13, height: 1.4),
+        ),
+        const SizedBox(height: 16),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF9FAFB),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Column(
+            children: [
+              _buildSummaryRow('Server', _serverDisplayLabel()),
+              const SizedBox(height: 8),
+              _buildSummaryRow('Kode aktivasi', masked),
+              const SizedBox(height: 8),
+              _buildSummaryRow(
+                'Koneksi',
+                _connectionVerified ? 'Sudah dicek — OK' : 'Belum dicek',
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        const Text(
+          'NAMA LOKASI / KETERANGAN PERANGKAT (OPSIONAL)',
+          style: TextStyle(
+            fontWeight: FontWeight.w900,
+            fontSize: 12,
+            letterSpacing: 1,
+            color: Colors.black38,
+          ),
+        ),
+        const SizedBox(height: 8),
+        TextField(
+          controller: _noteController,
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+          decoration: InputDecoration(
+            hintText: 'Contoh: Kasir Depan, Tablet 2',
+            fillColor: const Color(0xFFF9FAFB),
+            filled: true,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide.none,
+            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSummaryRow(String label, String value) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 110,
+          child: Text(
+            label,
+            style: const TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+              color: Colors.black45,
+            ),
+          ),
+        ),
+        Expanded(
+          child: Text(
+            value,
+            style: const TextStyle(
+              fontWeight: FontWeight.w900,
+              fontSize: 12,
+              color: MetroColors.primary,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAdvancedOptionsSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: MetroColors.error.withOpacity(0.08),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: MetroColors.error.withOpacity(0.2)),
+          ),
+          child: const Text(
+            'Area ini hanya untuk teknisi. Salah konfigurasi dapat menghapus data penjualan.',
+            style: TextStyle(
+              color: MetroColors.error,
+              fontWeight: FontWeight.bold,
+              fontSize: 12,
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(
+              child: _buildFeatureCard(
+                title: 'MODE DEMO / TRAINING',
+                subtitle: 'Latihan tanpa server',
+                icon: Icons.model_training,
+                color: Colors.orange,
+                isActive: _isDemoMode,
+                onTap: () => _toggleDemoMode(!_isDemoMode),
+                trailing: Switch(
+                  value: _isDemoMode,
+                  onChanged: _toggleDemoMode,
+                  activeColor: Colors.orange,
+                ),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: _buildFeatureCard(
+                title: 'INFO DEMO VENDOR',
+                subtitle: 'Buka website',
+                icon: Icons.auto_awesome,
+                color: Colors.blue,
+                onTap: _openDemoWebsite,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: MetroColors.error.withOpacity(0.05),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: MetroColors.error.withOpacity(0.1)),
+          ),
+          child: Row(
+            children: [
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'RESET TOTAL',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w900,
+                        color: MetroColors.error,
+                        fontSize: 14,
+                      ),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      'Hapus semua data lokal dan reset koneksi manual.',
+                      style: TextStyle(fontSize: 12, color: Colors.redAccent),
+                    ),
+                  ],
+                ),
+              ),
+              ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: MetroColors.error,
+                  foregroundColor: Colors.white,
+                ),
+                onPressed: _finalizeSetup,
+                icon: const Icon(Icons.delete_forever),
+                label: const Text('RESET', style: TextStyle(fontWeight: FontWeight.bold)),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        ExpansionTile(
+          title: const Text(
+            'KONFIGURASI TEKNIS (MANUAL)',
+            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: Colors.grey),
+          ),
+          children: [
+            Container(
+              padding: const EdgeInsets.all(24),
+              color: Colors.black.withOpacity(0.02),
+              child: Column(
+                children: [
+                  _buildField('BASE URL', _urlController),
+                  const SizedBox(height: 16),
+                  _buildField('CLIENT ID', _clientIdController),
+                  const SizedBox(height: 16),
+                  _buildField('CLIENT SECRET', _clientSecretController),
+                  const SizedBox(height: 16),
+                  _buildField('LOCATION ID', _locationIdController),
+                  const SizedBox(height: 16),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      OutlinedButton(
+                        onPressed: _checkUrl,
+                        child: const Text('UJI URL', style: TextStyle(fontWeight: FontWeight.bold)),
+                      ),
+                      OutlinedButton(
+                        onPressed: _pasteConfig,
+                        child: const Text('TEMPEL JSON', style: TextStyle(fontWeight: FontWeight.bold)),
+                      ),
+                      OutlinedButton(
+                        onPressed: _uploadConfigFile,
+                        child: const Text('IMPORT FILE', style: TextStyle(fontWeight: FontWeight.bold)),
+                      ),
+                      OutlinedButton(
+                        onPressed: _resetFields,
+                        child: const Text('KOSONGKAN', style: TextStyle(fontWeight: FontWeight.bold)),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 
@@ -1266,7 +1685,7 @@ class _ConfigScreenState extends State<ConfigScreen> {
                 const SizedBox(height: 4),
                 Text('VERSI ${AppConfig.appVersion} • BUILD ${AppConfig.buildNumber}', style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
                 const SizedBox(height: 12),
-                Text('Sambungkan perangkat Anda ke ekosistem DonaPOS hanya dengan satu kode.', style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 12, height: 1.5)),
+                Text('Ikuti 3 langkah: pilih server, masukkan kode, lalu aktivasi.', style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 12, height: 1.5)),
               ],
             ),
           ),

@@ -141,12 +141,11 @@ class _AttendanceDialogState extends State<AttendanceDialog> {
         'time': DateTime.now()
       };
       
-      // Close dialog immediately — clock in is saved
+      await _uploadAttendanceToServer();
+
       if (mounted) Navigator.pop(context);
-      
-      // Fire-and-forget: print slip asynchronously
+
       _safePrintAttendanceSlip(data);
-      ApiService().syncAttendances();
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -179,17 +178,71 @@ class _AttendanceDialogState extends State<AttendanceDialog> {
       
       await prefs.remove('active_shift');
       
-      // Close dialog immediately — clock out is saved
+      await _uploadAttendanceToServer();
+
       if (mounted) Navigator.pop(context, true);
-      
-      // Fire-and-forget: print slip asynchronously
+
       _safePrintAttendanceSlip(data);
-      ApiService().syncAttendances();
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
         showDebugErrorDialog(context, title: 'GAGAL SIMPAN ABSENSI', error: e.toString());
       }
+    }
+  }
+
+  Future<void> _uploadAttendanceToServer() async {
+    try {
+      final result = await ApiService().syncAttendances();
+      if (!mounted) return;
+
+      final count = (result['count'] as int?) ?? 0;
+      final logLines = (result['logs'] as List?)?.cast<String>() ?? [];
+      final noInternet = logLines.any(
+        (l) => l.toUpperCase().contains('KONEKSI'),
+      );
+      final inProgress = logLines.any(
+        (l) => l.toLowerCase().contains('sedang berjalan'),
+      );
+
+      String message;
+      Color? backgroundColor;
+      if (count > 0) {
+        message = 'Absensi berhasil dikirim ke server ($count).';
+        backgroundColor = Colors.green.shade700;
+      } else if (noInternet) {
+        message =
+            'Absensi tersimpan di perangkat. Akan dikirim saat internet tersedia.';
+        backgroundColor = Colors.orange.shade800;
+      } else if (inProgress) {
+        message =
+            'Absensi tersimpan. Posting otomatis akan mengirim ke server.';
+        backgroundColor = Colors.orange.shade800;
+      } else {
+        message =
+            'Absensi tersimpan lokal. Posting otomatis akan mencoba lagi.';
+        backgroundColor = Colors.blueGrey;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message, style: const TextStyle(fontWeight: FontWeight.bold)),
+          backgroundColor: backgroundColor,
+          duration: const Duration(seconds: 4),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Absensi tersimpan. Gagal posting: $e',
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+          backgroundColor: Colors.orange.shade800,
+          duration: const Duration(seconds: 4),
+        ),
+      );
     }
   }
 

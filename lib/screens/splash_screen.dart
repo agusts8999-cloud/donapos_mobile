@@ -300,7 +300,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                 children: [
                   Text('AKTIVASI PERANGKAT', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14.sp, letterSpacing: 1.sc)),
                   SizedBox(height: 2.sc),
-                  Text('Hubungkan ke server bisnis Anda', style: TextStyle(fontSize: 9.sp, fontWeight: FontWeight.w500, color: Colors.white70)),
+                  Text('Butuh kode dari admin / backoffice DonaPOS', style: TextStyle(fontSize: 9.sp, fontWeight: FontWeight.w500, color: Colors.white70)),
                 ],
               ),
             ),
@@ -351,30 +351,6 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
           ),
         ),
 
-        SizedBox(height: 24.sc),
-
-        // Tertiary: Manual setup link
-        TextButton(
-          onPressed: () {
-            // Fallback: show the old error flow for advanced users
-            setState(() {
-              _isFirstTime = false;
-              _retryCount++;
-              _setError(_ErrorType.notConfigured, 'SERVER BELUM DIKONFIGURASI\nGUNAKAN MENU DI BAWAH UNTUK SETUP MANUAL');
-            });
-          },
-          child: Text(
-            'SETUP MANUAL / LANJUT OFFLINE',
-            style: TextStyle(
-              color: Colors.white38,
-              fontSize: 10.sp,
-              fontWeight: FontWeight.w700,
-              decoration: TextDecoration.underline,
-              decorationColor: Colors.white38,
-              letterSpacing: 1.sc,
-            ),
-          ),
-        ),
       ],
     );
   }

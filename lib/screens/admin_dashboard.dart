@@ -9,6 +9,7 @@ import 'package:donapos_mobile/utils_ui.dart';
 import 'package:donapos_mobile/design_system.dart';
 import 'package:donapos_mobile/widgets/glass_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sqflite/sqflite.dart';
 import 'package:donapos_mobile/widgets/confirm_dialog.dart';
 import 'package:donapos_mobile/widgets/product_manager_dialog.dart';
 import 'package:donapos_mobile/screens/admin/invoice_settings_dialog.dart';
@@ -32,6 +33,8 @@ import 'package:donapos_mobile/utils_storage.dart';
 import 'package:donapos_mobile/widgets/database_migration_dialog.dart';
 import 'package:donapos_mobile/sync_service.dart';
 import 'package:donapos_mobile/widgets/demo_restriction_dialog.dart';
+import 'package:donapos_mobile/models/admin_sync_preset.dart';
+import 'package:donapos_mobile/services/admin_sync_runner.dart';
 
 class AdminDashboard extends StatefulWidget {
   final String username;
@@ -80,6 +83,13 @@ class _AdminDashboardState extends State<AdminDashboard> {
   bool _autoPayAfterKot = true;
   bool _splitPaymentEnabled = false;
 
+  String _businessName = '';
+  String _locationName = '';
+  int _productCount = 0;
+  int _staffCount = 0;
+  bool _isPostingSync = false;
+  String _postingStatus = '';
+
   List<Map<String, dynamic>> _paymentMethods = [];
   final Map<String, TextEditingController> _pmControllers = {};
   final Map<String, String?> _pmImages = {};
@@ -105,6 +115,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
     _loadConfig();
     _loadPriceGroups();
     _loadPaymentMethods();
+    _loadHomeStats();
 
     // Check storage on entry
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -269,6 +280,66 @@ class _AdminDashboardState extends State<AdminDashboard> {
     setState(() {
       _priceGroups = groups;
     });
+  }
+
+  Future<void> _loadHomeStats() async {
+    final bn = await _apiService.getBusinessName();
+    final ln = await _apiService.getLocationName();
+    final db = await DatabaseHelper.instance.database;
+    final products = Sqflite.firstIntValue(
+          await db.rawQuery('SELECT COUNT(*) FROM products'),
+        ) ??
+        0;
+    final staff = Sqflite.firstIntValue(
+          await db.rawQuery('SELECT COUNT(*) FROM users'),
+        ) ??
+        0;
+    if (mounted) {
+      setState(() {
+        _businessName = bn;
+        _locationName = ln;
+        _productCount = products;
+        _staffCount = staff;
+      });
+    }
+  }
+
+  Future<void> _runPostingPreset({bool fromHome = false}) async {
+    if (_isDemoMode) {
+      showDemoRestrictionDialog(context);
+      return;
+    }
+    if (_isPostingSync) return;
+
+    setState(() {
+      _isPostingSync = true;
+      _postingStatus = 'Mengirim data ke server...';
+    });
+
+    final result = await runAdminSyncPreset(
+      api: _apiService,
+      presetIds: AdminSyncPreset.postingIds,
+      onStep: (current, total, label) {
+        if (mounted) {
+          setState(() => _postingStatus = 'Langkah $current/$total: $label');
+        }
+      },
+    );
+
+    if (!mounted) return;
+    setState(() {
+      _isPostingSync = false;
+      _postingStatus = result.success
+          ? 'Data berhasil dikirim ke server.'
+          : (result.errorMessage ?? 'Gagal mengirim data.');
+    });
+
+    showAppModal(
+      context,
+      title: result.success ? 'BERHASIL' : 'GAGAL',
+      message: _postingStatus,
+      isError: !result.success,
+    );
   }
 
   Future<void> _syncGroups() async {
@@ -452,21 +523,25 @@ class _AdminDashboardState extends State<AdminDashboard> {
 
   @override
   Widget build(BuildContext context) {
-    final lp = Provider.of<LanguageProvider>(context);
-    final menuItems = [lp.translate('synchronization'), lp.translate('settings'), lp.translate('system_data')];
-    final menuIcons = [Icons.cloud_sync, Icons.settings, Icons.storage];
+    const menuItems = ['Beranda', 'Unduh data', 'Pengaturan', 'Lanjutan'];
+    const menuIcons = [
+      Icons.home_rounded,
+      Icons.cloud_download_rounded,
+      Icons.tune_rounded,
+      Icons.more_horiz_rounded,
+    ];
+    // Beranda, Unduh data, Pengaturan: Expanded + GridView (hindari GridView di ScrollView tanpa shrinkWrap)
+    final useFixedHeight = _selectedIndex <= 2;
 
     return Scaffold(
       backgroundColor: MetroColors.background,
       body: Row(
         children: [
-          // SIDEBAR
           Container(
             width: 160,
             color: MetroColors.white,
             child: Column(
               children: [
-                // Header
                 Container(
                   padding: const EdgeInsets.all(16),
                   color: MetroColors.primary,
@@ -478,21 +553,45 @@ class _AdminDashboardState extends State<AdminDashboard> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text('ADMIN PANEL', style: TextStyle(color: Colors.white.withOpacity(0.9), fontWeight: FontWeight.w900, letterSpacing: 1.2, fontSize: 13)),
+                          Text(
+                            'ADMIN',
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.9),
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 1.2,
+                              fontSize: 13,
+                            ),
+                          ),
                           if (_isDemoMode)
                             Container(
                               margin: const EdgeInsets.only(left: 8),
                               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                              decoration: BoxDecoration(color: Colors.orange, borderRadius: BorderRadius.circular(4)),
-                              child: const Text('DEMO', style: TextStyle(color: Colors.black, fontWeight: FontWeight.w900, fontSize: 9)),
-                            )
+                              decoration: BoxDecoration(
+                                color: Colors.orange,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: const Text(
+                                'DEMO',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 9,
+                                ),
+                              ),
+                            ),
                         ],
                       ),
-                      Text(widget.username.toUpperCase(), style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 9, fontWeight: FontWeight.bold)),
+                      Text(
+                        widget.username.toUpperCase(),
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.7),
+                          fontSize: 9,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ],
                   ),
                 ),
-                // Menu Items
                 Expanded(
                   child: ListView.builder(
                     padding: const EdgeInsets.symmetric(vertical: 8),
@@ -500,16 +599,19 @@ class _AdminDashboardState extends State<AdminDashboard> {
                     itemBuilder: (context, index) {
                       final isSelected = _selectedIndex == index;
                       return ListTile(
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                         tileColor: isSelected ? MetroColors.background : null,
-                        leading: Icon(menuIcons[index], color: isSelected ? MetroColors.primary : Colors.black45, size: 18),
+                        leading: Icon(
+                          menuIcons[index],
+                          color: isSelected ? MetroColors.primary : Colors.black45,
+                          size: 20,
+                        ),
                         title: Text(
-                          menuItems[index].toUpperCase(),
+                          menuItems[index],
                           style: TextStyle(
                             color: isSelected ? MetroColors.primary : Colors.black54,
                             fontWeight: FontWeight.bold,
-                            fontSize: 10.5,
-                            letterSpacing: 0.5
+                            fontSize: 11,
                           ),
                         ),
                         onTap: () => setState(() => _selectedIndex = index),
@@ -517,13 +619,12 @@ class _AdminDashboardState extends State<AdminDashboard> {
                     },
                   ),
                 ),
-                // Action Buttons
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Column(
                     children: [
-                       MetroButton(
-                        label: 'KASIR',
+                      MetroButton(
+                        label: 'Buka kasir',
                         icon: Icons.shopping_cart,
                         onPressed: _enterPos,
                         color: MetroColors.secondary,
@@ -531,7 +632,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                       ),
                       const SizedBox(height: 8),
                       MetroButton(
-                        label: 'LOGOUT',
+                        label: 'Keluar',
                         icon: Icons.logout,
                         onPressed: _logout,
                         color: MetroColors.error,
@@ -546,20 +647,30 @@ class _AdminDashboardState extends State<AdminDashboard> {
             ),
           ),
           const VerticalDivider(width: 1, color: Colors.black12),
-          // CONTENT AREA
           Expanded(
-            child: SingleChildScrollView(
+            child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(menuItems[_selectedIndex].toUpperCase(), style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: MetroColors.text, letterSpacing: 1.5)),
-                  const SizedBox(height: 32),
-                  _buildContent(),
+                  Text(
+                    menuItems[_selectedIndex],
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w900,
+                      color: MetroColors.text,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Expanded(
+                    child: useFixedHeight
+                        ? _buildContent()
+                        : SingleChildScrollView(child: _buildContent()),
+                  ),
                 ],
               ),
             ),
-          )
+          ),
         ],
       ),
     );
@@ -568,140 +679,218 @@ class _AdminDashboardState extends State<AdminDashboard> {
   Widget _buildContent() {
     final lp = Provider.of<LanguageProvider>(context);
     switch (_selectedIndex) {
-      case 0: return _buildSyncTab(lp);
-      case 1: return _buildSettingsTab(lp);
-      case 2: return _buildSystemTab(lp);
-      default: return const SizedBox();
+      case 0:
+        return _buildHomeTab();
+      case 1:
+        return _buildDownloadTab();
+      case 2:
+        return _buildSettingsTab(lp);
+      case 3:
+        return _buildAdvancedTab(lp);
+      default:
+        return const SizedBox();
     }
   }
 
-  Widget _buildSyncTab(LanguageProvider lp) {
-    return ConstrainedBox(
-      constraints: const BoxConstraints(maxWidth: 800),
-      child: MetroPanel(
-        padding: EdgeInsets.zero,
-        showBorder: true,
-        child: SizedBox(
-          height: 500,
-          child: SyncCenterDialog(
-            isContentOnly: true,
-            isLoading: false,
-            username: widget.username,
-            apiService: _apiService,
-            onSyncTask: (title, task) {},
-            onSyncComplete: () {
-                if (mounted) {
-                    _loadPriceGroups();
-                    _loadPaymentMethods();
-                }
-            },
+  Widget _buildHomeTab() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (_businessName.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Text(
+              '$_businessName · $_locationName · $_productCount produk · $_staffCount staf',
+              style: const TextStyle(fontSize: 12, color: Colors.black54, fontWeight: FontWeight.w600),
+            ),
+          ),
+        Expanded(
+          child: GridView.count(
+            crossAxisCount: 2,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+            childAspectRatio: 1.35,
+            children: [
+              _homeActionCard(
+                title: 'Unduh data bisnis',
+                subtitle: 'Produk, kasir, meja',
+                icon: Icons.cloud_download_rounded,
+                color: MetroColors.primary,
+                onTap: () => setState(() => _selectedIndex = 1),
+              ),
+              _homeActionCard(
+                title: 'Kirim ke server',
+                subtitle: 'Penjualan & biaya',
+                icon: Icons.cloud_upload_rounded,
+                color: MetroColors.secondary,
+                onTap: _isPostingSync ? null : () => _runPostingPreset(fromHome: true),
+              ),
+              _homeActionCard(
+                title: 'Atur printer',
+                subtitle: 'Printer kasir',
+                icon: Icons.print_rounded,
+                color: Colors.blueAccent,
+                onTap: () => showDialog(
+                  context: context,
+                  builder: (_) => const PrinterSettingsDialog(),
+                ),
+              ),
+              _homeActionCard(
+                title: 'Buka kasir',
+                subtitle: 'Mulai transaksi',
+                icon: Icons.point_of_sale_rounded,
+                color: Colors.teal,
+                onTap: _enterPos,
+              ),
+            ],
+          ),
+        ),
+        if (_postingStatus.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Text(
+              _postingStatus,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: _isPostingSync ? MetroColors.primary : Colors.black54,
+              ),
+            ),
+          ),
+        if (_isDemoMode)
+          const Padding(
+            padding: EdgeInsets.only(top: 8),
+            child: Text(
+              'Mode demo — beberapa aksi berbahaya dibatasi.',
+              style: TextStyle(fontSize: 11, color: Colors.orange, fontWeight: FontWeight.w600),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _homeActionCard({
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required Color color,
+    VoidCallback? onTap,
+  }) {
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: color.withOpacity(0.2)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, color: color, size: 32),
+              const SizedBox(height: 12),
+              Text(title, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 14)),
+              const SizedBox(height: 4),
+              Text(subtitle, style: const TextStyle(fontSize: 11, color: Colors.black45)),
+            ],
           ),
         ),
       ),
     );
   }
 
+  Widget _buildDownloadTab() {
+    return MetroPanel(
+      padding: EdgeInsets.zero,
+      showBorder: true,
+      child: SyncCenterDialog(
+        isContentOnly: true,
+        isLoading: false,
+        username: widget.username,
+        apiService: _apiService,
+        uiMode: AdminSyncUiMode.simple,
+        initialPresetIds: AdminSyncPreset.downloadIds,
+        onSyncTask: (title, task) {},
+        onSyncComplete: () {
+          if (mounted) {
+            _loadPriceGroups();
+            _loadPaymentMethods();
+            _loadHomeStats();
+          }
+        },
+      ),
+    );
+  }
+
   Widget _buildSettingsTab(LanguageProvider lp) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        MetroSectionTitle(title: lp.translate('payment_methods').toUpperCase()),
-        MetroPanel(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text('LABEL CUSTOM', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
-                      const Text('KLIK IKON PUTARAN UNTUK SINKRON METODE BAYAR', style: TextStyle(fontSize: 8, color: Colors.black38, fontWeight: FontWeight.bold)),
-                    ],
-                  ),
-                  _isLoading 
-                    ? const SizedBox(width: 40, height: 40, child: Padding(padding: EdgeInsets.all(10), child: CircularProgressIndicator(strokeWidth: 2)))
-                    : IconButton(icon: const Icon(Icons.sync, color: MetroColors.primary), onPressed: () => _runSyncTask('METODE BAYAR', ({onProgress}) async { await _apiService.syncPaymentMethods(); await _loadPaymentMethods(); }))
-                ],
+    return LayoutBuilder(
+      builder: (ctx, constraints) {
+        final cols = constraints.maxWidth > 500 ? 2 : 1;
+        return GridView.count(
+          crossAxisCount: cols,
+          crossAxisSpacing: 10,
+          mainAxisSpacing: 10,
+          childAspectRatio: cols == 2 ? 1.55 : 2.2,
+          children: [
+            MetroTile(
+              label: 'Printer kasir',
+              icon: Icons.print,
+              color: Colors.blueAccent,
+              onTap: () => showDialog(context: context, builder: (_) => const PrinterSettingsDialog()),
+            ),
+            MetroTile(
+              label: 'Printer dapur',
+              icon: Icons.restaurant,
+              color: Colors.deepOrangeAccent,
+              onTap: () => showDialog(context: context, builder: (_) => const KitchenPrinterDialog()),
+            ),
+            MetroTile(
+              label: 'Kelola menu',
+              icon: Icons.price_change,
+              color: Colors.orange,
+              onTap: () => showDialog(context: context, builder: (_) => const ProductManagerDialog()),
+            ),
+            MetroTile(
+              label: 'Layar pelanggan',
+              icon: Icons.monitor,
+              color: Colors.purple,
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const CustomerDisplaySettingsScreen()),
               ),
-              const SizedBox(height: 16),
-              if (_paymentMethods.isEmpty) 
-                const Text('Data kosong. Silakan sync data pelengkap.', style: TextStyle(color: Colors.grey)),
-              ..._paymentMethods.map((pm) {
-                 String name = pm['name'];
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        // Icon Selector
-                        GestureDetector(
-                          onTap: () => _showIconPicker(name),
-                          child: Container(
-                            width: 50,
-                            height: 40,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              border: Border.all(color: Colors.black.withOpacity(0.1)),
-                              borderRadius: BorderRadius.circular(4)
-                            ),
-                            child: _pmImages[name] == null 
-                                ? const Icon(Icons.add_photo_alternate, color: Colors.black12, size: 20)
-                                : Padding(
-                                    padding: const EdgeInsets.all(6),
-                                    child: _buildPmImage(_pmImages[name]!),
-                                  ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        SizedBox(width: 80, child: Text(name.toUpperCase(), style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: MetroColors.primary))),
-                        const SizedBox(width: 12),
-                        Expanded(child: SizedBox(
-                          height: 35, 
-                          child: TextField(
-                            controller: _pmControllers[name], 
-                            decoration: const InputDecoration(border: OutlineInputBorder(), contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 0)), 
-                            style: const TextStyle(fontSize: 11),
-                            onChanged: (v) => _savePaymentMethodLabel(name, v)
-                          )
-                        ))
-                     ]),
-                  );
-              }).toList()
-            ]
-          )
-        ),
-
-        const SizedBox(height: 32),
-        const SizedBox(height: 32),
-        _buildQuickCashSettings(),
-
-        const SizedBox(height: 32),
-        _buildPrinterFilterSettings(),
-
-        const SizedBox(height: 32),
-        LayoutBuilder(builder: (ctx, constraints) {
-          return GridView.count(
-            crossAxisCount: constraints.maxWidth > 900 ? 3 : (constraints.maxWidth > 500 ? 2 : 1),
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            childAspectRatio: 4.2,
-            crossAxisSpacing: 6,
-            mainAxisSpacing: 6,
-            children: [
-              MetroTile(label: lp.translate('printer_setting'), icon: Icons.print, color: Colors.blueAccent, isHorizontal: true, onTap: () => showDialog(context: context, builder: (_) => const PrinterSettingsDialog())),
-              MetroTile(label: lp.translate('kitchen_printer'), icon: Icons.restaurant, color: Colors.deepOrangeAccent, isHorizontal: true, onTap: () => showDialog(context: context, builder: (_) => const KitchenPrinterDialog())),
-              MetroTile(label: lp.translate('invoice_setting'), icon: Icons.receipt, color: Colors.teal, isHorizontal: true, onTap: () => showDialog(context: context, builder: (_) => const InvoiceSettingsDialog())),
-              MetroTile(label: 'LABEL PRODUK', icon: Icons.label, color: Colors.blueGrey, isHorizontal: true, onTap: () => showDialog(context: context, builder: (_) => const ProductLabelSettingsDialog())),
-              MetroTile(label: lp.translate('menu_management'), icon: Icons.price_change, color: Colors.orange, isHorizontal: true, onTap: () => showDialog(context: context, builder: (_) => const ProductManagerDialog())),
-              MetroTile(label: 'LAYAR PELANGGAN', icon: Icons.monitor, color: Colors.purple, isHorizontal: true, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CustomerDisplaySettingsScreen()))),
-              MetroTile(label: 'MANAJEMEN WAITER', icon: Icons.badge, color: Colors.cyan, isHorizontal: true, onTap: () => showDialog(context: context, builder: (_) => const WaiterManagementDialog())),
-              MetroTile(label: 'PENGATURAN QR LOGIN', icon: Icons.qr_code_2, color: Colors.indigo, isHorizontal: true, onTap: () => showDialog(context: context, builder: (_) => const QrSettingsDialog())),
-            ],
-          );
-        }),
-      ],
+            ),
+            MetroTile(
+              label: 'Invoice & struk',
+              icon: Icons.receipt,
+              color: Colors.teal,
+              onTap: () => showDialog(context: context, builder: (_) => const InvoiceSettingsDialog()),
+            ),
+            MetroTile(
+              label: 'Label produk',
+              icon: Icons.label,
+              color: Colors.blueGrey,
+              onTap: () => showDialog(context: context, builder: (_) => const ProductLabelSettingsDialog()),
+            ),
+            MetroTile(
+              label: 'Manajemen waiter',
+              icon: Icons.badge,
+              color: Colors.cyan,
+              onTap: () => showDialog(context: context, builder: (_) => const WaiterManagementDialog()),
+            ),
+            MetroTile(
+              label: 'QR login kasir',
+              icon: Icons.qr_code_2,
+              color: Colors.indigo,
+              onTap: () => showDialog(context: context, builder: (_) => const QrSettingsDialog()),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -796,352 +985,465 @@ class _AdminDashboardState extends State<AdminDashboard> {
       }
   }
 
-  Widget _buildSystemTab(LanguageProvider lp) {
+  Widget _buildAdvancedTab(LanguageProvider lp) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-         Row(
-           children: [
-             Expanded(
-               child: MetroTile(
-                 label: 'CEK DATA LOKAL', 
-                 subLabel: 'MONITOR STATUS SYNC', 
-                 icon: Icons.manage_search, 
-                 color: MetroColors.secondary,
-                 isHorizontal: true,
-                 onTap: () => showDialog(context: context, builder: (_) => const LocalDataCheckDialog())
-               ),
-             ),
-             const SizedBox(width: 16),
-             Expanded(
-                child: MetroTile(
-                  label: 'CEK KAPASITAS', 
-                  subLabel: 'FREE SPACE CHECK', 
-                  icon: Icons.storage_rounded, 
-                  color: Colors.blueAccent,
-                  isHorizontal: true,
-                  onTap: () => StorageUtils.showStorageInfo(context),
-                ),
+        const MetroSectionTitle(title: 'Kirim ke cloud'),
+        SizedBox(
+          height: 260,
+          child: MetroPanel(
+            padding: EdgeInsets.zero,
+            showBorder: true,
+            child: SyncCenterDialog(
+              isContentOnly: true,
+              isLoading: false,
+              username: widget.username,
+              apiService: _apiService,
+              uiMode: AdminSyncUiMode.simple,
+              initialPresetIds: AdminSyncPreset.postingIds,
+              onSyncTask: (title, task) {},
+              onSyncComplete: () {},
+            ),
+          ),
+        ),
+        const SizedBox(height: 24),
+        const MetroSectionTitle(title: 'Data & backup'),
+        Row(
+          children: [
+            Expanded(
+              child: MetroTile(
+                label: 'Cek data di tablet',
+                subLabel: 'Lihat ringkasan data lokal',
+                icon: Icons.manage_search,
+                color: MetroColors.secondary,
+                isHorizontal: true,
+                onTap: () => showDialog(context: context, builder: (_) => const LocalDataCheckDialog()),
               ),
-           ],
-         ),
-         const SizedBox(height: 16),
-         MetroTile(
-           label: 'MIGRASI MANUAL DATABASE', 
-           subLabel: 'PERBAIKI STRUKTUR & CEK LOG MIGRASI', 
-           icon: Icons.terminal_rounded, 
-           color: Colors.blueGrey,
-           isHorizontal: true,
-           onTap: _manualMigration
-         ),
-         const SizedBox(height: 32),
-        MetroSectionTitle(title: lp.translate('system_data').toUpperCase()),
-         MetroPanel(
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: MetroTile(
+                label: 'Cek ruang penyimpanan',
+                subLabel: 'Kapasitas memori tablet',
+                icon: Icons.storage_rounded,
+                color: Colors.blueAccent,
+                isHorizontal: true,
+                onTap: () => StorageUtils.showStorageInfo(context),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        SizedBox(
+          width: double.infinity,
+          child: MetroButton(
+            label: 'Backup ke kartu SD',
+            icon: Icons.sd_storage,
+            color: Colors.blueGrey,
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const SdCardBackupScreen(allowRestore: true)),
+            ),
+            isSecondary: true,
+          ),
+        ),
+        const SizedBox(height: 24),
+        MetroSectionTitle(title: lp.translate('payment_methods')),
+        _buildPaymentMethodsEditor(),
+        const SizedBox(height: 24),
+        _buildQuickCashSettings(),
+        const SizedBox(height: 24),
+        _buildPrinterFilterSettings(),
+        const SizedBox(height: 24),
+        const MetroSectionTitle(title: 'Pengaturan kasir'),
+        MetroPanel(
+          padding: EdgeInsets.zero,
+          child: Column(
+            children: [
+              ExpansionTile(
+                initiallyExpanded: true,
+                title: const Text('Operasional', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13)),
+                children: [
+                  _buildSettingRow(
+                    'Backup otomatis setelah transaksi',
+                    'Simpan salinan ke kartu SD setiap selesai transaksi',
+                    _autoBackupEnabled,
+                    (v) { setState(() => _autoBackupEnabled = v); _saveConfig(); },
+                  ),
+                  _buildSettingRow(
+                    'Pembulatan otomatis',
+                    'Bulatkan total transaksi ke ratusan terdekat',
+                    _roundingEnabled,
+                    (v) { setState(() => _roundingEnabled = v); _saveConfig(); },
+                  ),
+                  _buildSettingRow(
+                    'Hitung pajak',
+                    'Aktifkan perhitungan pajak di kasir',
+                    _taxEnabled,
+                    (v) { setState(() => _taxEnabled = v); _saveConfig(); },
+                  ),
+                  _buildSettingRow(
+                    'Izinkan kasir sinkron data',
+                    'Gunakan akun admin untuk unduh data dari kasir',
+                    _syncAdminEnabled,
+                    (v) async {
+                      setState(() => _syncAdminEnabled = v);
+                      final prefs = await SharedPreferences.getInstance();
+                      if (v) {
+                        await prefs.setString('sync_admin_user', widget.username);
+                      } else {
+                        await prefs.remove('sync_admin_user');
+                        await prefs.remove('sync_admin_pass');
+                      }
+                      await prefs.setBool('sync_admin_enabled', v);
+                      if (mounted) {
+                        showAppModal(
+                          context,
+                          title: v ? 'Sinkron kasir aktif' : 'Sinkron kasir nonaktif',
+                          message: v
+                              ? 'Kredensial admin tersimpan untuk kasir.'
+                              : 'Kasir tidak dapat mengunduh data.',
+                        );
+                      }
+                    },
+                  ),
+                  _buildSettingRow(
+                    'Wajib absen masuk',
+                    'Blokir kasir jika belum clock-in',
+                    _attendanceRequired,
+                    (v) { setState(() => _attendanceRequired = v); _saveConfig(); },
+                  ),
+                  _buildAutoPostingRow(),
+                ],
+              ),
+              const Divider(height: 1),
+              ExpansionTile(
+                initiallyExpanded: true,
+                title: const Text('Tampilan kasir', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13)),
+                children: [
+                  _buildSettingRow(
+                    'Cetak struk ganda',
+                    'Tampilkan opsi cetak ulang struk',
+                    _duplicatePrintEnabled,
+                    (v) { setState(() => _duplicatePrintEnabled = v); _saveConfig(); },
+                  ),
+                  _buildSettingRow(
+                    'Cetak bukti saat hold',
+                    'Tanya cetak saat transaksi ditahan',
+                    _printHoldReceiptEnabled,
+                    (v) { setState(() => _printHoldReceiptEnabled = v); _saveConfig(); },
+                  ),
+                  _buildSettingRow(
+                    'Cetak otomatis setelah bayar',
+                    'Cetak struk langsung setelah pembayaran',
+                    _autoPrintReceipt,
+                    (v) { setState(() => _autoPrintReceipt = v); _saveConfig(); },
+                  ),
+                  _buildSettingRow(
+                    'Tanya nama pelanggan',
+                    'Minta nama sebelum bayar (pelanggan umum)',
+                    _askCustomerNameEnabled,
+                    (v) { setState(() => _askCustomerNameEnabled = v); _saveConfig(); },
+                  ),
+                  _buildSettingRow(
+                    'Tombol cetak tagihan',
+                    'Tampilkan tombol Bill di kasir',
+                    _showBillButton,
+                    (v) { setState(() => _showBillButton = v); _saveConfig(); },
+                  ),
+                  _buildSettingRow(
+                    'Tombol cetak dapur',
+                    'Tampilkan tombol Dapur di kasir',
+                    _showKitchenButton,
+                    (v) { setState(() => _showKitchenButton = v); _saveConfig(); },
+                  ),
+                  _buildSettingRow(
+                    'Bayar setelah cetak dapur',
+                    'Buka layar bayar otomatis setelah kirim dapur',
+                    _autoPayAfterKot,
+                    (v) { setState(() => _autoPayAfterKot = v); _saveConfig(); },
+                  ),
+                  _buildSettingRow(
+                    'Pembayaran terpisah',
+                    'Izinkan split payment satu pesanan',
+                    _splitPaymentEnabled,
+                    (v) { setState(() => _splitPaymentEnabled = v); _saveConfig(); },
+                  ),
+                  _buildSettingRow(
+                    'Tombol diskon',
+                    'Tampilkan diskon manual di kasir',
+                    _showDiscountButton,
+                    (v) { setState(() => _showDiscountButton = v); _saveConfig(); },
+                  ),
+                ],
+              ),
+              const Divider(height: 1),
+              ExpansionTile(
+                title: const Text('Animasi & suara', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13)),
+                children: [
+                  _buildSettingRow(
+                    'Animasi daftar produk',
+                    'Geser otomatis daftar produk',
+                    _animProductEnabled,
+                    (v) { setState(() => _animProductEnabled = v); _saveConfig(); },
+                  ),
+                  _buildSettingRow(
+                    'Animasi menu kasir',
+                    'Geser otomatis menu header',
+                    _animMenuEnabled,
+                    (v) { setState(() => _animMenuEnabled = v); _saveConfig(); },
+                  ),
+                  _buildSettingRow(
+                    'Ubah harga topping',
+                    'Kasir boleh ubah harga topping',
+                    _toppingEditingEnabled,
+                    (v) { setState(() => _toppingEditingEnabled = v); _saveConfig(); },
+                  ),
+                  _buildSettingRow(
+                    'Efek suara',
+                    'Suara klik di aplikasi',
+                    _soundEnabled,
+                    (v) {
+                      setState(() => _soundEnabled = v);
+                      GlobalSettings.soundEnabled = v;
+                      _saveConfig();
+                    },
+                  ),
+                  _buildSettingRow(
+                    'Kalkulator',
+                    'Tombol kalkulator di kasir',
+                    _calculatorEnabled,
+                    (v) { setState(() => _calculatorEnabled = v); _saveConfig(); },
+                  ),
+                  _buildSettingRow(
+                    'Versi di laporan',
+                    'Tampilkan versi app di footer laporan',
+                    _showReportAppVersion,
+                    (v) { setState(() => _showReportAppVersion = v); _saveConfig(); },
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 24),
+        MetroTile(
+          label: 'Perbaiki database (teknisi)',
+          subLabel: 'Migrasi manual & log perbaikan',
+          icon: Icons.terminal_rounded,
+          color: Colors.blueGrey,
+          isHorizontal: true,
+          onTap: _manualMigration,
+        ),
+        const SizedBox(height: 24),
+        const MetroSectionTitle(title: 'Zona bahaya'),
+        Row(
+          children: [
+            Expanded(
+              child: MetroButton(
+                label: 'Hapus semua produk',
+                icon: Icons.inventory_2,
+                color: Colors.orange.shade800,
+                onPressed: _clearProducts,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: MetroButton(
+                label: 'Hapus foto produk',
+                icon: Icons.image_not_supported,
+                color: Colors.pink.shade800,
+                onPressed: _clearProductImages,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          width: double.infinity,
+          child: MetroButton(
+            label: 'Reset database penjualan',
+            icon: Icons.delete_forever,
+            color: MetroColors.error,
+            onPressed: _resetSales,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAutoPostingRow() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          const Expanded(
             child: Column(
-               children: [
-                   const SizedBox(height: 16),
-                   SizedBox(
-                    width: double.infinity,
-                    child: MetroButton(
-                       label: 'MANAJEMEN BACKUP SD CARD',
-                       icon: Icons.sd_storage,
-                       color: Colors.blueGrey, 
-                       onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SdCardBackupScreen(allowRestore: true))),
-                       isSecondary: true
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                       Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                          Text('AUTO BACKUP SETELAH TRANSAKSI', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
-                          const Text('Otomatis backup data ke SD Card setiap selesai transaksi', style: TextStyle(fontSize: 9, color: Colors.grey)),
-                      ]),
-                      Switch(value: _autoBackupEnabled, activeColor: MetroColors.primary, onChanged: (v) { setState(() => _autoBackupEnabled = v); _saveConfig(); })
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-                  const Divider(),
-                  const SizedBox(height: 24),
-                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                       Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                          Text(lp.translate('automatic_rounding').toUpperCase(), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
-                          const Text('Bulatkan total transaksi ke ratusan terdekat', style: TextStyle(fontSize: 9, color: Colors.grey)),
-                      ]),
-                      Switch(value: _roundingEnabled, activeColor: MetroColors.primary, onChanged: (v) { setState(() => _roundingEnabled = v); _saveConfig(); })
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                    Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                       Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                          Text(lp.translate('calculate_tax').toUpperCase(), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
-                          const Text('Aktifkan perhitungan pajak di pos', style: TextStyle(fontSize: 9, color: Colors.grey)),
-                      ]),
-                      Switch(value: _taxEnabled, activeColor: MetroColors.primary, onChanged: (v) { setState(() => _taxEnabled = v); _saveConfig(); })
-                    ],
-                  ),
-                   const SizedBox(height: 16),
-                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                       Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                          Text(lp.translate('duplicate_print').toUpperCase(), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
-                          const Text('Tampilkan pilihan cetak struk 2x di kasir', style: TextStyle(fontSize: 9, color: Colors.grey)),
-                      ]),
-                      Switch(value: _duplicatePrintEnabled, activeColor: MetroColors.primary, onChanged: (v) { setState(() => _duplicatePrintEnabled = v); _saveConfig(); })
-                    ],
-                  ),
-                   const SizedBox(height: 16),
-                     Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                       Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                          const Text('SINKRONISASI KASIR', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 11, color: MetroColors.primary)),
-                          const Text('Gunakan kredensial admin ini untuk sinkronisasi kasir', style: TextStyle(fontSize: 9, color: Colors.grey)),
-                      ]),
-                      Switch(value: _syncAdminEnabled, activeColor: MetroColors.primary, onChanged: (v) async { 
-                          setState(() => _syncAdminEnabled = v); 
-                          final prefs = await SharedPreferences.getInstance();
-                          if (v) {
-                              await prefs.setString('sync_admin_user', widget.username);
-                              // Password sudah disimpan otomatis saat login tadi (LoginScreen)
-                          } else {
-                              await prefs.remove('sync_admin_user');
-                              await prefs.remove('sync_admin_pass');
-                          }
-                          await prefs.setBool('sync_admin_enabled', v);
-                          showAppModal(context, title: v ? 'SINKRON AKTIF' : 'SINKRON MATI', message: v ? 'INFO ADMIN TERSIMPAN UNTUK KASIR.' : 'KASIR TIDAK DAPAT SINKRON.');
-                      })
-                    ],
-                  ),
-                   const SizedBox(height: 16),
-                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                       Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                          const Text('CETAK BUKTI HOLD', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
-                          const Text('Tampilkan pilihan cetak saat transaksi di-hold', style: TextStyle(fontSize: 9, color: Colors.grey)),
-                      ]),
-                      Switch(value: _printHoldReceiptEnabled, activeColor: MetroColors.primary, onChanged: (v) { setState(() => _printHoldReceiptEnabled = v); _saveConfig(); })
-                    ],
-                  ),
-                   const SizedBox(height: 16),
-                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                       Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                          const Text('CETAK OTOMATIS SAAT BAYAR', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: MetroColors.primary)),
-                          const Text('Cetak struk secara otomatis setelah pembayaran sukses', style: TextStyle(fontSize: 9, color: Colors.grey)),
-                      ]),
-                      Switch(value: _autoPrintReceipt, activeColor: MetroColors.primary, onChanged: (v) { setState(() => _autoPrintReceipt = v); _saveConfig(); })
-                    ],
-                  ),
-                   const SizedBox(height: 16),
-                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                       Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                          const Text('TANYAKAN NAMA PELANGGAN', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
-                          const Text('Selalu tanya nama pelanggan sebelum pembayaran (jika pelanggan umum)', style: TextStyle(fontSize: 9, color: Colors.grey)),
-                      ]),
-                      Switch(value: _askCustomerNameEnabled, activeColor: MetroColors.primary, onChanged: (v) { setState(() => _askCustomerNameEnabled = v); _saveConfig(); })
-                    ],
-                  ),
-                   const SizedBox(height: 16),
-                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                       Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                          const Text('TAMPILKAN TOMBOL BILL', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
-                          const Text('Tampilkan tombol cetak tagihan (BILL) di header kasir', style: TextStyle(fontSize: 9, color: Colors.grey)),
-                      ]),
-                      Switch(value: _showBillButton, activeColor: MetroColors.primary, onChanged: (v) { setState(() => _showBillButton = v); _saveConfig(); })
-                    ],
-                  ),
-                   const SizedBox(height: 16),
-                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                       Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                          const Text('TAMPILKAN TOMBOL DAPUR', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
-                          const Text('Tampilkan tombol cetak pesanan (DAPUR) di header kasir', style: TextStyle(fontSize: 9, color: Colors.grey)),
-                      ]),
-                      Switch(value: _showKitchenButton, activeColor: MetroColors.primary, onChanged: (v) { setState(() => _showKitchenButton = v); _saveConfig(); })
-                    ],
-                  ),
-                   const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Kirim ke server otomatis', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
+                Text('Kirim penjualan secara berkala', style: TextStyle(fontSize: 9, color: Colors.grey)),
+              ],
+            ),
+          ),
+          if (_autoPostingEnabled)
+            GestureDetector(
+              onTap: () async {
+                final controller = TextEditingController(text: _autoPostingInterval.toString());
+                await showDialog(
+                  context: context,
+                  builder: (ctx) => AlertDialog(
+                    title: const Text('Interval kirim data', style: TextStyle(fontWeight: FontWeight.bold)),
+                    content: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                         Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                            const Text('LANGSUNG BAYAR SETELAH DAPUR', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: MetroColors.secondary)),
-                            const Text('Selesai cetak ke dapur otomatis buka layar bayar', style: TextStyle(fontSize: 9, color: Colors.grey)),
-                        ]),
-                        Switch(value: _autoPayAfterKot, activeColor: MetroColors.secondary, onChanged: (v) { setState(() => _autoPayAfterKot = v); _saveConfig(); })
+                        const Text('Kirim data setiap berapa menit?'),
+                        const SizedBox(height: 12),
+                        TextField(
+                          controller: controller,
+                          keyboardType: TextInputType.number,
+                          decoration: const InputDecoration(suffixText: 'menit', border: OutlineInputBorder()),
+                        ),
                       ],
                     ),
-                    const SizedBox(height: 16),
-                    Row(
-                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                     children: [
-                        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                           const Text('AKTIFKAN SPLIT PEMBAYARAN', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
-                           const Text('Izinkan kasir membagi pembayaran satu pesanan', style: TextStyle(fontSize: 9, color: Colors.grey)),
-                       ]),
-                       Switch(value: _splitPaymentEnabled, activeColor: MetroColors.primary, onChanged: (v) { setState(() => _splitPaymentEnabled = v); _saveConfig(); })
-                     ],
-                   ),
-                   const SizedBox(height: 16),
-                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                       Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                          const Text('TAMPILKAN TOMBOL DISKON', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
-                          const Text('Tampilkan tombol diskon manual di header kasir', style: TextStyle(fontSize: 9, color: Colors.grey)),
-                      ]),
-                      Switch(value: _showDiscountButton, activeColor: MetroColors.primary, onChanged: (v) { setState(() => _showDiscountButton = v); _saveConfig(); })
+                    actions: [
+                      TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Batal')),
+                      ElevatedButton(
+                        onPressed: () {
+                          final val = int.tryParse(controller.text);
+                          if (val != null && val > 0) {
+                            setState(() => _autoPostingInterval = val);
+                            _saveConfig();
+                            Navigator.pop(ctx);
+                          }
+                        },
+                        child: const Text('Simpan'),
+                      ),
                     ],
                   ),
-                   const SizedBox(height: 16),
-                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                       Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                          const Text('WAJIB PRESENSI (CLOCK-IN)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
-                          const Text('Blokir akses kasir jika belum melakukan absen masuk', style: TextStyle(fontSize: 9, color: Colors.grey)),
-                      ]),
-                      Switch(value: _attendanceRequired, activeColor: MetroColors.primary, onChanged: (v) { setState(() => _attendanceRequired = v); _saveConfig(); })
-                    ],
-                  ),
-                   const SizedBox(height: 16),
-                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                       Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                          const Text('POSTING OTOMATIS', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: MetroColors.secondary)),
-                          const Text('Kirim data transaksi ke cloud secara berkala', style: TextStyle(fontSize: 9, color: Colors.grey)),
-                      ]),
-                      Row(
-                        children: [
-                          if (_autoPostingEnabled) 
-                            GestureDetector(
-                              onTap: () async {
-                                final controller = TextEditingController(text: _autoPostingInterval.toString());
-                                await showDialog(
-                                  context: context,
-                                  builder: (ctx) => AlertDialog(
-                                    title: const Text('INTERVAL POSTING', style: TextStyle(fontWeight: FontWeight.bold)),
-                                    content: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        const Text('Ingin cek posting setiap berapa menit?'),
-                                        const SizedBox(height: 12),
-                                        TextField(
-                                          controller: controller,
-                                          keyboardType: TextInputType.number,
-                                          decoration: const InputDecoration(suffixText: 'Menit', border: OutlineInputBorder()),
-                                        )
-                                      ],
-                                    ),
-                                    actions: [
-                                      TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('BATAL')),
-                                      ElevatedButton(onPressed: () {
-                                        int? val = int.tryParse(controller.text);
-                                        if (val != null && val > 0) {
-                                          setState(() => _autoPostingInterval = val);
-                                          _saveConfig();
-                                          Navigator.pop(ctx);
-                                        }
-                                      }, child: const Text('SIMPAN')),
-                                    ],
-                                  )
-                                );
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                decoration: BoxDecoration(color: MetroColors.secondary.withOpacity(0.1), borderRadius: BorderRadius.circular(4)),
-                                child: Text('${_autoPostingInterval} MENIT', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: MetroColors.secondary)),
-                              ),
-                            ),
-                          Switch(value: _autoPostingEnabled, activeColor: MetroColors.secondary, onChanged: (v) { 
-                            setState(() => _autoPostingEnabled = v); 
-                            _saveConfig(); 
-                          })
-                        ],
-                      )
-                    ],
-                  ),
-                   const SizedBox(height: 16),
-                  const Divider(),
-                  const SizedBox(height: 24),
-                  MetroSectionTitle(title: 'UX & ANIMASI'),
-                  const SizedBox(height: 16),
-                  _buildSettingRow('ANIMASI GERAKAN PRODUK', 'Aktifkan autoscroll pada daftar produk', _animProductEnabled, (v) { setState(() => _animProductEnabled = v); _saveConfig(); }),
-                  const SizedBox(height: 12),
-                  _buildSettingRow('ANIMASI GERAKAN MENU', 'Aktifkan marquee pada header & menu kasir', _animMenuEnabled, (v) { setState(() => _animMenuEnabled = v); _saveConfig(); }),
-                  const SizedBox(height: 12),
-                  _buildSettingRow('IZINKAN UBAH HARGA TOPPING', 'Kasir dapat mengubah harga topping saat transaksi', _toppingEditingEnabled, (v) { setState(() => _toppingEditingEnabled = v); _saveConfig(); }),
-                  const SizedBox(height: 12),
-                  _buildSettingRow('EFEK SUARA', 'Aktifkan suara klik pada aplikasi', _soundEnabled, (v) { 
-                      setState(() => _soundEnabled = v); 
-                      GlobalSettings.soundEnabled = v;
-                      _saveConfig(); 
-                  }),
-                  const SizedBox(height: 12),
-                  _buildSettingRow('TAMPILKAN KALKULATOR', 'Tampilkan tombol kalkulator di menu kasir', _calculatorEnabled, (v) { 
-                      setState(() => _calculatorEnabled = v); 
-                      _saveConfig(); 
-                  }),
-                  const SizedBox(height: 12),
-                  _buildSettingRow('VERSI PADA LAPORAN', 'Tampilkan versi & build aplikasi pada footer laporan', _showReportAppVersion, (v) { 
-                      setState(() => _showReportAppVersion = v); 
-                      _saveConfig(); 
-                  }),
-                  const SizedBox(height: 32),
+                );
+              },
+              child: Container(
+                margin: const EdgeInsets.only(right: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: MetroColors.secondary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  '$_autoPostingInterval menit',
+                  style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: MetroColors.secondary),
+                ),
+              ),
+            ),
+          Switch(
+            value: _autoPostingEnabled,
+            activeColor: MetroColors.secondary,
+            onChanged: (v) {
+              setState(() => _autoPostingEnabled = v);
+              _saveConfig();
+            },
+          ),
+        ],
+      ),
+    );
+  }
 
-                  const Divider(),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: MetroButton(
-                          label: 'HAPUS PRODUK',
-                          icon: Icons.inventory_2,
-                          color: Colors.orange.shade800,
-                          onPressed: _clearProducts,
-                        ),
+  Widget _buildPaymentMethodsEditor() {
+    return MetroPanel(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Label & ikon metode bayar', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                    Text('Sesuaikan tampilan di layar pembayaran', style: TextStyle(fontSize: 9, color: Colors.black38)),
+                  ],
+                ),
+              ),
+              _isLoading
+                  ? const SizedBox(
+                      width: 40,
+                      height: 40,
+                      child: Padding(
+                        padding: EdgeInsets.all(10),
+                        child: CircularProgressIndicator(strokeWidth: 2),
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: MetroButton(
-                          label: 'HAPUS GAMBAR',
-                          icon: Icons.image_not_supported,
-                          color: Colors.pink.shade800,
-                          onPressed: _clearProductImages,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  SizedBox(
-                    width: double.infinity,
-                    child: MetroButton(
-                       label: '${lp.translate('reset_database').toUpperCase()} (BAHAYA)',
-                       icon: Icons.delete_forever,
-                       color: MetroColors.error,
-                       onPressed: _resetSales
+                    )
+                  : IconButton(
+                      icon: const Icon(Icons.sync, color: MetroColors.primary),
+                      onPressed: () => _runSyncTask('Metode bayar', ({onProgress}) async {
+                        await _apiService.syncPaymentMethods();
+                        await _loadPaymentMethods();
+                      }),
                     ),
-                  )
-               ],
-            )
-         )
-      ],
+            ],
+          ),
+          const SizedBox(height: 16),
+          if (_paymentMethods.isEmpty)
+            const Text('Belum ada data. Unduh data bisnis terlebih dahulu.', style: TextStyle(color: Colors.grey)),
+          ..._paymentMethods.map((pm) {
+            final name = pm['name'] as String;
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  GestureDetector(
+                    onTap: () => _showIconPicker(name),
+                    child: Container(
+                      width: 50,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        border: Border.all(color: Colors.black.withOpacity(0.1)),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: _pmImages[name] == null
+                          ? const Icon(Icons.add_photo_alternate, color: Colors.black12, size: 20)
+                          : Padding(
+                              padding: const EdgeInsets.all(6),
+                              child: _buildPmImage(_pmImages[name]!),
+                            ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  SizedBox(
+                    width: 80,
+                    child: Text(
+                      name,
+                      style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: MetroColors.primary),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: SizedBox(
+                      height: 35,
+                      child: TextField(
+                        controller: _pmControllers[name],
+                        decoration: const InputDecoration(
+                          border: OutlineInputBorder(),
+                          contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 0),
+                        ),
+                        style: const TextStyle(fontSize: 11),
+                        onChanged: (v) => _savePaymentMethodLabel(name, v),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+        ],
+      ),
     );
   }
 
@@ -1150,8 +1452,8 @@ class _AdminDashboardState extends State<AdminDashboard> {
           child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                  const Text('PILIHAN UANG CEPAT (QUICK CASH)', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
-                  const Text('NOMINAL INI AKAN MUNCUL SEBAGAI TOMBOL PENINTAS DI LAYAR PEMBAYARAN', style: TextStyle(fontSize: 8, color: Colors.black38, fontWeight: FontWeight.bold)),
+                  const Text('Tombol uang cepat', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                  const Text('Nominal pintasan di layar pembayaran', style: TextStyle(fontSize: 9, color: Colors.black38)),
                   const SizedBox(height: 16),
                   Wrap(
                       spacing: 8,
@@ -1256,7 +1558,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-         const MetroSectionTitle(title: 'FILTER BLUETOOTH PRINTER'),
+         const MetroSectionTitle(title: 'Filter printer Bluetooth'),
          MetroPanel(
             child: Column(
                children: [
@@ -1265,8 +1567,8 @@ class _AdminDashboardState extends State<AdminDashboard> {
                      controller: _printerFilterCashierController,
                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: MetroColors.text),
                      decoration: const InputDecoration(
-                         labelText: 'Filter Nama Printer Kasir (Default: RPP02N)',
-                         helperText: 'Kosongkan untuk menampilkan semua. Contoh: RPP02N',
+                         labelText: 'Nama printer kasir (contoh: RPP02N)',
+                         helperText: 'Kosongkan untuk menampilkan semua perangkat',
                          border: OutlineInputBorder(),
                          filled: true,
                          fillColor: Colors.white,
@@ -1280,8 +1582,8 @@ class _AdminDashboardState extends State<AdminDashboard> {
                      controller: _printerFilterLabelController,
                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: MetroColors.text),
                      decoration: const InputDecoration(
-                         labelText: 'Filter Nama Printer Label',
-                         helperText: 'Kosongkan untuk menampilkan semua',
+                         labelText: 'Nama printer label',
+                         helperText: 'Kosongkan untuk menampilkan semua perangkat',
                          border: OutlineInputBorder(),
                          filled: true,
                          fillColor: Colors.white,

@@ -19,6 +19,7 @@ import 'package:donapos_mobile/config.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'dart:math';
 import 'package:donapos_mobile/services/logger_service.dart';
+import 'package:donapos_mobile/utils/activation_messages.dart';
 
 void apiServicePrint(String msg) {
     print('[ApiService] $msg');
@@ -183,33 +184,33 @@ class ApiService {
         cleanUrl = cleanUrl.substring(0, cleanUrl.length - 1);
     }
     
-    if (cleanUrl.isEmpty) return {'valid': false, 'message': 'URL TIDAK BOLEH KOSONG.'};
-    if (!cleanUrl.startsWith('http')) return {'valid': false, 'message': 'URL HARUS DIMULAI DENGAN HTTP/HTTPS.'};
-    
+    if (cleanUrl.isEmpty) {
+      return {'valid': false, 'message': ActivationMessages.emptyUrl};
+    }
+    if (!cleanUrl.startsWith('http')) {
+      return {'valid': false, 'message': ActivationMessages.invalidUrl};
+    }
+
     try {
-      // Mencoba akses root URL
-      final response = await http.get(Uri.parse(cleanUrl)).timeout(const Duration(seconds: 10));
-      
-      // Status code < 500 berarti server hidup dan merespon
+      final response =
+          await http.get(Uri.parse(cleanUrl)).timeout(const Duration(seconds: 10));
+
       if (response.statusCode < 500) {
         return {
-          'valid': true, 
-          'message': 'KONEKSI BERHASIL! SERVER MERESPON (${response.statusCode}).\n\nSERVER TERDETEKSI AKTIF.'
-        };
-      } else {
-        return {
-          'valid': false, 
-          'message': 'SERVER DITEMUKAN TAPI MEMBERIKAN RESPON ERROR (${response.statusCode}).'
+          'valid': true,
+          'message': 'Server merespons dengan baik. Anda bisa melanjutkan aktivasi.',
         };
       }
+      return {
+        'valid': false,
+        'message': ActivationMessages.serverUnreachable,
+      };
     } catch (e) {
-      String msg = e.toString();
-      if (msg.contains('SocketException')) {
-        msg = "GAGAL MENGHUBUNGI HOST (IP/DOMAIN).\n\nTips:\n1. Pastikan Internet Aktif.\n2. Jika menggunakan XAMPP/Localhost, pastikan menggunakan alamat IP Laptop (contoh: 192.168.1.x) bukan 'localhost'.\n3. Pastikan Firewall Laptop tidak memblokir koneksi.";
-      } else if (msg.contains('HandshakeException')) {
-        msg = "MASALAH SSL/SERTIFIKAT (Handshake Error).\nPastikan waktu di Tablet sudah benar atau gunakan HTTP jika server tidak mendukung HTTPS.";
-      }
-      return {'valid': false, 'message': 'URL TIDAK MERESPON.\n\n$msg'};
+      print('[ApiService] validateBaseUrl error: $e');
+      return {
+        'valid': false,
+        'message': ActivationMessages.fromException(e),
+      };
     }
   }
 
@@ -218,7 +219,22 @@ class ApiService {
     if (cleanUrl.endsWith('/')) {
       cleanUrl = cleanUrl.substring(0, cleanUrl.length - 1);
     }
-    
+
+    final normalizedCode = code.replaceAll('-', '').trim().toUpperCase();
+    if (normalizedCode.length != 9) {
+      return {'success': false, 'message': ActivationMessages.invalidCodeFormat};
+    }
+    // API DonaPOS mengharapkan format berstrip (contoh: 111-111-111), bukan 9 digit tanpa strip.
+    final apiCode = ActivationMessages.formatForApi(normalizedCode);
+
+    final reachability = await validateBaseUrl(cleanUrl);
+    if (reachability['valid'] != true) {
+      return {
+        'success': false,
+        'message': reachability['message'] ?? ActivationMessages.serverUnreachable,
+      };
+    }
+
     try {
       String deviceInfo = "Mobile: UNKNOWN DEVICE";
       try {
@@ -233,13 +249,13 @@ class ApiService {
       } catch (_) {}
       
       String fullInfo = "$deviceInfo | Location: $locationInfo";
-      print('[ApiService] Activating: URL=$cleanUrl code=$code');
+      print('[ApiService] Activating: URL=$cleanUrl code=$apiCode');
 
       final response = await http.post(
         Uri.parse('$cleanUrl/connector/api/activation/verify'),
         headers: {'Accept': 'application/json', 'Content-Type': 'application/x-www-form-urlencoded'},
         body: {
-          'code': code,
+          'code': apiCode,
           'device_info': fullInfo,
           'ip_address': ip ?? ''
         },
@@ -257,21 +273,37 @@ class ApiService {
               'users': data['users'] ?? []     // null-safe
             };
           } else {
-            return {'success': false, 'message': data['message']?.toString() ?? 'AKTIVASI DITOLAK OLEH SERVER.'};
+            return {
+              'success': false,
+              'message': ActivationMessages.userMessage(
+                data['message']?.toString(),
+              ),
+            };
           }
         } catch (e) {
-          return {'success': false, 'message': 'RESPON SERVER TIDAK VALID (BUKAN JSON).'};
+          print('[ApiService] Activation JSON parse error: $e');
+          return {'success': false, 'message': ActivationMessages.genericFailure};
         }
       } else {
         try {
           final errorData = json.decode(response.body);
-          return {'success': false, 'message': 'ERROR ${response.statusCode}: ${errorData['message'] ?? errorData.toString()}'};
+          return {
+            'success': false,
+            'message': ActivationMessages.fromActivationHttp(
+              response.statusCode,
+              serverMessage: errorData['message']?.toString(),
+            ),
+          };
         } catch (_) {
-          return {'success': false, 'message': 'ERROR HTTP ${response.statusCode}.\nPastikan URL dan Kode Aktivasi benar.'};
+          return {
+            'success': false,
+            'message': ActivationMessages.fromActivationHttp(response.statusCode),
+          };
         }
       }
     } catch (e) {
-      return {'success': false, 'message': 'GAGAL MENGHUBUNGI SERVER AKTIVASI.\nURL: $cleanUrl/connector/api/activation/verify\nERROR: $e'};
+      print('[ApiService] activateWithCode error: $e');
+      return {'success': false, 'message': ActivationMessages.fromException(e)};
     }
   }
 
@@ -2427,114 +2459,191 @@ class ApiService {
     return 0;
   }
 
+  /// True when attendance API succeeded or server reports a safe duplicate state.
+  bool _attendanceStepSucceeded(http.Response response) {
+    final code = response.statusCode;
+    if (code >= 200 && code < 300) return true;
+    if (code < 400 || code >= 500) return false;
+    if (code == 409) return true;
+
+    final body = response.body.toLowerCase();
+    const hints = [
+      'duplicate',
+      'already',
+      'sudah',
+      'exist',
+      'clocked in',
+      'clocked out',
+      'clock in',
+      'clock out',
+      'presensi',
+      'attendance',
+      'checked in',
+      'checked out',
+    ];
+    if (code == 422 || code == 400) {
+      return hints.any(body.contains);
+    }
+    return false;
+  }
+
   Future<Map<String, dynamic>> syncAttendances({Function(String)? onProgress}) async {
       if (await isDemo()) return {'count': 0, 'logs': ['MODE DEMO: POSTING DINONAKTIFKAN']};
-      if (!await checkConnection()) return {'count': 0, 'logs': ['TIDAK ADA KONEKSI INTERNET']};
-      
-      final unsynced = await DatabaseHelper.instance.getUnsyncedAttendances();
-      print('[Sync|ATT] Unsynced count: ${unsynced.length}');
-      
-      if (unsynced.isEmpty) {
+      if (!await checkConnection()) {
+        return {'count': 0, 'logs': ['TIDAK ADA KONEKSI INTERNET']};
+      }
+
+      if (!await DatabaseHelper.instance.tryAcquireSyncLock(
+        lockKey: DatabaseHelper.attendanceSyncLockKey,
+        ttl: const Duration(minutes: 3),
+      )) {
+        return {
+          'count': 0,
+          'logs': ['Sinkron absensi sedang berjalan di proses lain.'],
+        };
+      }
+
+      try {
+        final unsynced = await DatabaseHelper.instance.getUnsyncedAttendances();
+        print('[Sync|ATT] Unsynced count: ${unsynced.length}');
+
+        if (unsynced.isEmpty) {
           final db = await DatabaseHelper.instance.database;
-          final totalCount = Sqflite.firstIntValue(await db.rawQuery('SELECT COUNT(*) FROM attendances')) ?? 0;
+          final totalCount =
+              Sqflite.firstIntValue(await db.rawQuery('SELECT COUNT(*) FROM attendances')) ??
+                  0;
           print('[Sync|ATT] Total records in DB: $totalCount');
-          return {'count': 0, 'logs': ['TIDAK ADA DATA ABSENSI BARU UNTUK DIKIRIM (Total di DB: $totalCount)']};
-      }
-      
-      final baseUrl = await getBaseUrl();
-      var headers = await _prepareAuthHeaders();
-      int count = 0;
-      List<String> logs = [];
-      logs.add('Ditemukan ${unsynced.length} data absensi belum terkirim.');
-      
-      if (onProgress != null) onProgress('Uploading 0/${unsynced.length}');
-      
-      int i = 0;
-      for (var att in unsynced) {
-         i++;
-         if (onProgress != null) onProgress('Uploading $i/${unsynced.length}');
-         try {
-            // Convert ISO8601 to MySQL Format (Y-m-d H:i:s)
+          return {
+            'count': 0,
+            'logs': [
+              'TIDAK ADA DATA ABSENSI BARU UNTUK DIKIRIM (Total di DB: $totalCount)',
+            ],
+          };
+        }
+
+        final baseUrl = await getBaseUrl();
+        var headers = await _prepareAuthHeaders();
+        int count = 0;
+        final List<String> logs = [];
+        logs.add('Ditemukan ${unsynced.length} data absensi belum terkirim.');
+
+        if (onProgress != null) onProgress('Uploading 0/${unsynced.length}');
+
+        int i = 0;
+        for (var att in unsynced) {
+          i++;
+          final attId = att['id'];
+          if (onProgress != null) onProgress('Uploading $i/${unsynced.length}');
+
+          try {
             String formatTime(String? iso) {
-                if (iso == null || iso.isEmpty) return '';
-                return iso.replaceFirst('T', ' ').split('.').first;
+              if (iso == null || iso.isEmpty) return '';
+              return iso.replaceFirst('T', ' ').split('.').first;
             }
 
-            // Function to perform POST with 401 retry
-            Future<http.Response> postWithRetry(String endpoint, Map<String, dynamic> body) async {
-                var response = await http.post(
-                   Uri.parse('$baseUrl/connector/api/attendance/$endpoint'),
-                   headers: headers,
-                   body: json.encode(body)
-                ).timeout(const Duration(seconds: 10));
+            Future<http.Response> postWithRetry(
+              String endpoint,
+              Map<String, dynamic> body,
+            ) async {
+              var response = await http
+                  .post(
+                    Uri.parse('$baseUrl/connector/api/attendance/$endpoint'),
+                    headers: headers,
+                    body: json.encode(body),
+                  )
+                  .timeout(const Duration(seconds: 10));
 
-                if (response.statusCode == 401) {
-                    print('[Sync Attendance] 401 Unauthenticated. Retrying with fresh Machine Token...');
-                    final prefs = await SharedPreferences.getInstance();
-                    await prefs.remove('token');
-                    await authenticateClient();
-                    headers = await getHeaders(); // Update outer scope headers
-                    
-                    response = await http.post(
-                       Uri.parse('$baseUrl/connector/api/attendance/$endpoint'),
-                       headers: headers,
-                       body: json.encode(body)
-                    ).timeout(const Duration(seconds: 10));
-                }
-                return response;
+              if (response.statusCode == 401) {
+                print(
+                  '[Sync Attendance] 401 Unauthenticated. Retrying with fresh token...',
+                );
+                final prefs = await SharedPreferences.getInstance();
+                await prefs.remove('token');
+                await authenticateClient();
+                headers = await getHeaders();
+
+                response = await http
+                    .post(
+                      Uri.parse('$baseUrl/connector/api/attendance/$endpoint'),
+                      headers: headers,
+                      body: json.encode(body),
+                    )
+                    .timeout(const Duration(seconds: 10));
+              }
+              return response;
             }
 
-            bool clockInSuccess = false;
-
-            // 1. Clock In (Mandatory part of record)
             final clockInRes = await postWithRetry('clockin', {
-                'user_id': att['user_id'],
-                'clock_in_time': formatTime(att['clock_in']),
-                'clock_in_note': 'Synced from Donapos Mobile',
-                'ip_address': att['ip_address'],
-                'latitude': att['latitude'],
-                'longitude': att['longitude'],
+              'user_id': att['user_id'],
+              'clock_in_time': formatTime(att['clock_in']?.toString()),
+              'clock_in_note': 'Synced from Donapos Mobile',
+              'ip_address': att['ip_address'],
+              'latitude': att['latitude'],
+              'longitude': att['longitude'],
             });
-            
-            // Treat 200 (Success) OR 4xx (Client Error, likely duplicated) as success for Clock In step
-            if (clockInRes.statusCode == 200 || (clockInRes.statusCode >= 400 && clockInRes.statusCode < 500)) {
-               clockInSuccess = true;
-               if (clockInRes.statusCode != 200) {
-                   print('Sync Attendance ClockIn Warning (ID ${att['id']}): ${clockInRes.statusCode} ${clockInRes.body}. Continuing...');
-               }
-            } else {
-               print('Sync Attendance ClockIn Failed (ID ${att['id']}): ${clockInRes.statusCode} ${clockInRes.body}');
+
+            if (!_attendanceStepSucceeded(clockInRes)) {
+              final msg =
+                  'Clock-in gagal (ID $attId): ${clockInRes.statusCode} ${clockInRes.body}';
+              print('[Sync Attendance] $msg');
+              logs.add(msg);
+              continue;
             }
 
-            // If Clock In step is considered done (or skipped/duplicated), proceed to Clock Out if needed
-            if (clockInSuccess) {
-               bool finalSuccess = true;
-
-               // 2. Clock Out (If record is finished)
-               if (att['status'] == 'finished' && att['clock_out'] != null) {
-                  final clockOutRes = await postWithRetry('clockout', {
-                      'user_id': att['user_id'],
-                      'clock_out_time': formatTime(att['clock_out']),
-                      'clock_out_note': 'Synced from Donapos Mobile',
-                      'latitude': att['clock_out_latitude'],
-                      'longitude': att['clock_out_longitude'],
-                  });
-
-                  if (clockOutRes.statusCode != 200) {
-                      finalSuccess = false;
-                      print('Sync Attendance ClockOut Failed (ID ${att['id']}): ${clockOutRes.statusCode} ${clockOutRes.body}');
-                  }
-               }
-               
-               if (finalSuccess) {
-                   await DatabaseHelper.instance.markAttendanceSynced(att['id']);
-                   count++;
-               }
+            if (clockInRes.statusCode != 200) {
+              print(
+                '[Sync Attendance] ClockIn duplicate/accepted (ID $attId): ${clockInRes.statusCode}',
+              );
             }
-         } catch (e) {
-            print('Sync Attendance Error (ID ${att['id']}): $e');
-         }
+
+            var finalSuccess = true;
+            final isFinished =
+                att['status'] == 'finished' && att['clock_out'] != null;
+
+            if (isFinished) {
+              final clockOutRes = await postWithRetry('clockout', {
+                'user_id': att['user_id'],
+                'clock_out_time': formatTime(att['clock_out']?.toString()),
+                'clock_out_note': 'Synced from Donapos Mobile',
+                'latitude': att['clock_out_latitude'],
+                'longitude': att['clock_out_longitude'],
+              });
+
+              if (!_attendanceStepSucceeded(clockOutRes)) {
+                finalSuccess = false;
+                final msg =
+                    'Clock-out gagal (ID $attId): ${clockOutRes.statusCode} ${clockOutRes.body}';
+                print('[Sync Attendance] $msg');
+                logs.add(msg);
+              } else if (clockOutRes.statusCode != 200) {
+                print(
+                  '[Sync Attendance] ClockOut duplicate/accepted (ID $attId): ${clockOutRes.statusCode}',
+                );
+              }
+            }
+
+            if (finalSuccess) {
+              await DatabaseHelper.instance.markAttendanceSynced(attId);
+              count++;
+            }
+          } catch (e) {
+            final msg = 'Error absensi ID $attId: $e';
+            print('[Sync Attendance] $msg');
+            logs.add(msg);
+          }
+        }
+
+        if (count > 0) {
+          logs.add('Berhasil mengirim $count data absensi.');
+        } else if (unsynced.isNotEmpty) {
+          logs.add('Tidak ada absensi yang berhasil dikirim pada percobaan ini.');
+        }
+
+        return {'count': count, 'logs': logs};
+      } finally {
+        await DatabaseHelper.instance.releaseSyncLock(
+          lockKey: DatabaseHelper.attendanceSyncLockKey,
+        );
       }
-      return {'count': count, 'logs': logs};
   }
 }

@@ -1,11 +1,15 @@
 import 'package:donapos_mobile/design_system.dart';
 import 'package:donapos_mobile/widgets/glass_dialog.dart';
 import 'package:donapos_mobile/api_service.dart';
+import 'package:donapos_mobile/models/admin_sync_preset.dart';
+import 'package:donapos_mobile/services/admin_sync_runner.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:donapos_mobile/language_provider.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+enum AdminSyncUiMode { simple, advanced }
 
 class SyncItem {
   final String id;
@@ -27,6 +31,8 @@ class SyncCenterDialog extends StatefulWidget {
   final String? username;
   final double? width;
   final double? height;
+  final AdminSyncUiMode uiMode;
+  final List<String>? initialPresetIds;
 
   const SyncCenterDialog({
     super.key,
@@ -38,6 +44,8 @@ class SyncCenterDialog extends StatefulWidget {
     this.username,
     this.width,
     this.height,
+    this.uiMode = AdminSyncUiMode.advanced,
+    this.initialPresetIds,
   });
 
   @override
@@ -54,6 +62,9 @@ class _SyncCenterDialogState extends State<SyncCenterDialog> {
   bool _isAdminAuthReady = true;
   final List<String> _logs = [];
   final ScrollController _logScrollController = ScrollController();
+  bool _showAdvancedList = false;
+  String _simpleStatus = 'Siap mengunduh data bisnis ke tablet.';
+  double _simpleProgress = 0;
 
   @override
   void dispose() {
@@ -94,27 +105,76 @@ class _SyncCenterDialogState extends State<SyncCenterDialog> {
       }
   }
 
+  static const Map<String, IconData> _syncIcons = {
+    'PRD': Icons.inventory_2,
+    'IMG': Icons.image,
+    'MOD': Icons.set_meal,
+    'CAT': Icons.category,
+    'TAB': Icons.table_bar,
+    'STF': Icons.people,
+    'TXS': Icons.receipt_long,
+    'DSC': Icons.discount,
+    'PMT': Icons.payments,
+    'CUS': Icons.contact_page,
+    'CGR': Icons.groups,
+    'SPG': Icons.sell,
+    'BIZ': Icons.business,
+    'XCT': Icons.list_alt,
+    'EXP': Icons.upload_file,
+    'ATT': Icons.fingerprint,
+    'SAL': Icons.cloud_upload,
+  };
+
   void _initItems() {
-    final api = widget.apiService;
-    _items = [
-      SyncItem(id: 'PRD', label: 'PRODUK & STOK', icon: Icons.inventory_2, task: ({onProgress}) => api.syncProducts(includeImages: true, force: true, onProgress: onProgress)),
-      SyncItem(id: 'IMG', label: 'GAMBAR PRODUK', icon: Icons.image, task: ({onProgress}) => api.syncProductImages(onProgress: onProgress)),
-      SyncItem(id: 'MOD', label: 'TOPPING/MODIFIER', icon: Icons.set_meal, task: ({onProgress}) => api.syncModifiers()),
-      SyncItem(id: 'CAT', label: 'KATEGORI', icon: Icons.category, task: ({onProgress}) => api.syncCategories()),
-      SyncItem(id: 'TAB', label: 'DATA MEJA', icon: Icons.table_bar, task: ({onProgress}) => api.syncResTables()),
-      SyncItem(id: 'STF', label: 'KASIR & WAITER', icon: Icons.people, task: ({onProgress}) => api.syncUsers()),
-      SyncItem(id: 'TXS', label: 'PAJAK & SERVICE', icon: Icons.receipt_long, task: ({onProgress}) => api.syncTaxes()),
-      SyncItem(id: 'DSC', label: 'DISKON PROMO', icon: Icons.discount, task: ({onProgress}) => api.syncDiscounts()),
-      SyncItem(id: 'PMT', label: 'PEMBAYARAN', icon: Icons.payments, task: ({onProgress}) => api.syncPaymentMethods()),
-      SyncItem(id: 'CUS', label: 'DATA PELANGGAN', icon: Icons.contact_page, task: ({onProgress}) => api.syncContacts(onProgress: onProgress)),
-      SyncItem(id: 'CGR', label: 'GRUP PELANGGAN', icon: Icons.groups, task: ({onProgress}) => api.syncCustomerGroups()),
-      SyncItem(id: 'SPG', label: 'GRUP HARGA JUAL', icon: Icons.sell, task: ({onProgress}) => api.syncPriceGroups()),
-      SyncItem(id: 'BIZ', label: 'DETAIL BISNIS', icon: Icons.business, task: ({onProgress}) => api.syncBusinessDetails()),
-      SyncItem(id: 'XCT', label: 'KATEGORI BIAYA', icon: Icons.list_alt, task: ({onProgress}) => api.syncExpenseCategories()),
-      SyncItem(id: 'EXP', label: 'POSTING BIAYA', icon: Icons.upload_file, task: ({onProgress}) => api.syncExpenses()),
-      SyncItem(id: 'ATT', label: 'POSTING ABSENSI', icon: Icons.fingerprint, task: ({onProgress}) => api.syncAttendances()),
-      SyncItem(id: 'SAL', label: 'POSTING PENJUALAN', icon: Icons.cloud_upload, task: ({onProgress}) => api.syncTransactionsWithLogs()),
-    ];
+    final tasks = createAdminSyncItems(widget.apiService);
+    _items = tasks
+        .map(
+          (t) => SyncItem(
+            id: t.id,
+            label: t.label,
+            icon: _syncIcons[t.id] ?? Icons.sync,
+            task: t.task,
+          ),
+        )
+        .toList();
+  }
+
+  Future<void> _runSimplePreset(List<String> presetIds, {required String startMessage}) async {
+    if (_isSyncing) return;
+    setState(() {
+      _isSyncing = true;
+      _simpleProgress = 0;
+      _simpleStatus = startMessage;
+      _logs.clear();
+    });
+
+    final result = await runAdminSyncPreset(
+      api: widget.apiService,
+      presetIds: presetIds,
+      onStep: (current, total, label) {
+        if (!mounted) return;
+        setState(() {
+          _simpleProgress = current / total;
+          _simpleStatus = 'Langkah $current dari $total: $label';
+        });
+      },
+      onLog: (line) {
+        if (mounted) setState(() => _logs.add(line));
+      },
+    );
+
+    if (!mounted) return;
+    setState(() {
+      _isSyncing = false;
+      _simpleProgress = result.success ? 1 : _simpleProgress;
+      _simpleStatus = result.success
+          ? 'Selesai! $startMessage'
+          : (result.errorMessage ?? 'Proses gagal. Coba lagi.');
+    });
+
+    if (result.success && widget.onSyncComplete != null) {
+      widget.onSyncComplete!();
+    }
   }
 
   Future<void> _startSync() async {
@@ -358,21 +418,26 @@ class _SyncCenterDialogState extends State<SyncCenterDialog> {
 
     Widget mainContent = Column(
         children: [
-          _buildUtilityHeader(),
-          const Divider(height: 1),
+          if (_showAdvancedList || widget.uiMode == AdminSyncUiMode.advanced) ...[
+            _buildUtilityHeader(),
+            const Divider(height: 1),
+          ],
           Expanded(
             flex: 7,
-            child: ListView.builder(
-              padding: EdgeInsets.zero,
-              itemCount: _items.length,
-              itemBuilder: (context, index) {
-                final item = _items[index];
-                return _buildSyncItem(item);
-              },
-            ),
+            child: _showAdvancedList || widget.uiMode == AdminSyncUiMode.advanced
+                ? ListView.builder(
+                    padding: EdgeInsets.zero,
+                    itemCount: _items.length,
+                    itemBuilder: (context, index) {
+                      final item = _items[index];
+                      return _buildSyncItem(item);
+                    },
+                  )
+                : _buildSimplePanel(),
           ),
           // Debug Console
-          if (_logs.isNotEmpty || _isSyncing)
+          if ((_showAdvancedList || widget.uiMode == AdminSyncUiMode.advanced) &&
+              (_logs.isNotEmpty || _isSyncing))
             Expanded(
               flex: 3,
               child: Container(
@@ -392,7 +457,7 @@ class _SyncCenterDialogState extends State<SyncCenterDialog> {
                           const Icon(Icons.terminal, color: Colors.green, size: 14),
                           const SizedBox(width: 8),
                           Text(
-                            'DEBUG CONSOLE / LOGS',
+                            'DETAIL PROSES',
                             style: TextStyle(
                               color: Colors.green.withOpacity(0.8),
                               fontWeight: FontWeight.bold,
@@ -456,11 +521,18 @@ class _SyncCenterDialogState extends State<SyncCenterDialog> {
                 ),
               ),
             ),
-          _buildFooter(),
+          if (_showAdvancedList || widget.uiMode == AdminSyncUiMode.advanced) _buildFooter(),
         ],
     );
 
-    if (widget.isContentOnly) return mainContent;
+    if (widget.isContentOnly) {
+      if (widget.uiMode == AdminSyncUiMode.simple && !_showAdvancedList) {
+        return Column(
+          children: [Expanded(child: _buildSimplePanel())],
+        );
+      }
+      return mainContent;
+    }
 
     return GlassDialog(
       title: lp.translate('sync_center'),
@@ -596,7 +668,7 @@ class _SyncCenterDialogState extends State<SyncCenterDialog> {
             ),
             const SizedBox(width: 16),
             Text(
-              item.label.toUpperCase(),
+              item.label,
               style: TextStyle(
                 color: item.isSelected ? MetroColors.error : Colors.black26,
                 fontWeight: FontWeight.w900,
@@ -631,7 +703,122 @@ class _SyncCenterDialogState extends State<SyncCenterDialog> {
             else if (isSyncing)
               const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation(MetroColors.primary)))
             else
-              Text('WAIT', style: TextStyle(color: Colors.black12, fontSize: 9, fontWeight: FontWeight.bold)),
+              Text('MENUNGGU', style: TextStyle(color: Colors.black12, fontSize: 9, fontWeight: FontWeight.bold)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSimplePanel() {
+    final isDownloadPreset = widget.initialPresetIds == null ||
+        widget.initialPresetIds == AdminSyncPreset.downloadIds;
+
+    return Padding(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            isDownloadPreset
+                ? 'Unduh semua data bisnis yang dibutuhkan kasir (produk, kasir, meja, dll).'
+                : 'Kirim data penjualan, biaya, dan absensi dari tablet ke server.',
+            style: const TextStyle(fontSize: 13, color: Colors.black54, height: 1.4),
+          ),
+          const SizedBox(height: 20),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: _isSyncing ? (_simpleProgress > 0 ? _simpleProgress : null) : 0,
+              minHeight: 8,
+              backgroundColor: Colors.black12,
+              color: MetroColors.primary,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            _simpleStatus,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 12,
+              color: MetroColors.text,
+            ),
+          ),
+          const SizedBox(height: 24),
+          MetroButton(
+            label: _isSyncing
+                ? 'SEDANG MEMPROSES...'
+                : (isDownloadPreset ? 'UNDUH DATA BISNIS' : 'KIRIM KE SERVER'),
+            icon: isDownloadPreset ? Icons.cloud_download : Icons.cloud_upload,
+            onPressed: _isSyncing
+                ? null
+                : () => _runSimplePreset(
+                      widget.initialPresetIds ?? AdminSyncPreset.downloadIds,
+                      startMessage: isDownloadPreset
+                          ? 'Mengunduh data bisnis...'
+                          : 'Mengirim data ke server...',
+                    ),
+            isLarge: true,
+          ),
+          const SizedBox(height: 12),
+          TextButton.icon(
+            onPressed: _isSyncing
+                ? null
+                : () => setState(() => _showAdvancedList = !_showAdvancedList),
+            icon: Icon(_showAdvancedList ? Icons.expand_less : Icons.tune),
+            label: Text(
+              _showAdvancedList ? 'Sembunyikan daftar lengkap' : 'Tampilkan daftar lengkap (teknisi)',
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+            ),
+          ),
+          if (_logs.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton(
+                onPressed: () => _showLogSheet(context),
+                child: const Text('Lihat detail proses', style: TextStyle(fontSize: 11)),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  void _showLogSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF1E1E1E),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Detail proses',
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900),
+            ),
+            const SizedBox(height: 12),
+            Expanded(
+              child: ListView(
+                children: _logs
+                    .map(
+                      (l) => Padding(
+                        padding: const EdgeInsets.only(bottom: 4),
+                        child: Text(
+                          l,
+                          style: const TextStyle(
+                            color: Colors.white70,
+                            fontSize: 11,
+                            fontFamily: 'monospace',
+                          ),
+                        ),
+                      ),
+                    )
+                    .toList(),
+              ),
+            ),
           ],
         ),
       ),
@@ -648,7 +835,7 @@ class _SyncCenterDialogState extends State<SyncCenterDialog> {
         border: const Border(top: BorderSide(color: Colors.black12))
       ),
       child: MetroButton(
-        label: _isSyncing ? 'SEDANG SINKRONISASI...' : 'MULAI SINKRONISASI',
+        label: _isSyncing ? 'SEDANG MEMPROSES...' : 'MULAI PROSES TERPILIH',
         onPressed: (_isSyncing || !hasSelection) ? null : _startSync,
         color: MetroColors.primary,
         isLarge: false,
