@@ -56,12 +56,15 @@ class DonaposImage extends StatelessWidget {
         opacity: opacity != null ? AlwaysStoppedAnimation(opacity!) : null,
       );
     } else {
-      // Network image with caching
+      final int? memW = width != null ? (width! * 2).round() : 400;
+      final int? memH = height != null ? (height! * 2).round() : null;
       image = CachedNetworkImage(
         imageUrl: imageUrl!,
         width: width,
         height: height,
         fit: fit,
+        memCacheWidth: memW,
+        memCacheHeight: memH,
         color: color,
         colorBlendMode: opacity != null ? BlendMode.modulate : null,
         placeholder: (context, url) => placeholder ?? _buildPlaceholder(context),

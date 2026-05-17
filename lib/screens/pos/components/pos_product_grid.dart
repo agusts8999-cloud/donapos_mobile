@@ -58,8 +58,8 @@ class _PosProductGridState extends State<PosProductGrid> {
   }
 
   void _precacheImages() {
-    // Only precache the first 50-100 products to avoid heavy initial load
-    final productsToPrecache = widget.products.take(100).toList();
+    // Limit precache to reduce memory pressure on long POS sessions
+    final productsToPrecache = widget.products.take(24).toList();
     
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;

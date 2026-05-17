@@ -1952,7 +1952,16 @@ class ApiService {
     }
 
     _isGlobalSyncing = true; // Lock set
-    
+
+    if (!await DatabaseHelper.instance.tryAcquireSyncLock()) {
+      _isGlobalSyncing = false;
+      return {
+        'count': 0,
+        'total': 0,
+        'logs': ['Sync skipped: lock held by another sync process'],
+      };
+    }
+
     List<String> logs = [];
     final prefs = await SharedPreferences.getInstance();
 
@@ -1964,13 +1973,11 @@ class ApiService {
     var headers = await _prepareAuthHeaders();
     
     if (headers['Authorization'] == 'Bearer null' || headers['Authorization'] == 'Bearer ') {
-        _isGlobalSyncing = false; // Release lock
+        await DatabaseHelper.instance.releaseSyncLock();
+        _isGlobalSyncing = false;
         return {'count': 0, 'total': 0, 'logs': ['Sync TX aborted: No valid Auth Header (Level Admin/Client Required)']};
     }
-    
-    // Step 1: Upload Emergency Products Skip (Feature Disabled)
 
-    // List<String> logs = []; // Defined above
     int syncedCount = 0;
     int totalItems = 0;
 
@@ -1978,15 +1985,13 @@ class ApiService {
         final unsynced = await DatabaseHelper.instance.getUnsyncedTransactions();
         totalItems = unsynced.length;
         logs.add('Sync TX: Found $totalItems unsynced transactions');
-        
+
         if (unsynced.isEmpty) {
-             _isGlobalSyncing = false;
              return {'count': 0, 'total': 0, 'logs': logs};
         }
 
         if (AppConfig.isTrainingMode) {
              logs.add('Sync TX: Skipped (Training Mode Active)');
-             _isGlobalSyncing = false;
              return {'count': 0, 'total': unsynced.length, 'logs': logs};
         }
 
@@ -2240,7 +2245,8 @@ class ApiService {
     } catch (e) {
         logs.add("Global Error: $e");
     } finally {
-        _isGlobalSyncing = false; // Lock released always
+        await DatabaseHelper.instance.releaseSyncLock();
+        _isGlobalSyncing = false;
         try {
             final prefs = await SharedPreferences.getInstance();
             await prefs.setString('last_tx_sync_log', logs.join('\n'));

@@ -2378,5 +2378,54 @@ class DatabaseHelper {
 
 
   // Emergency Product and Local Staging functions removed
+
+  static const String _syncLockKey = 'sync_lock_expires_ms';
+
+  Future<void> _ensureAppSettingsTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS app_settings (
+        key TEXT PRIMARY KEY,
+        value TEXT NOT NULL
+      )
+    ''');
+  }
+
+  /// Cross-isolate friendly sync mutex (foreground + Workmanager).
+  Future<bool> tryAcquireSyncLock({
+    Duration ttl = const Duration(minutes: 5),
+  }) async {
+    final db = await database;
+    await _ensureAppSettingsTable(db);
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final rows = await db.query(
+      'app_settings',
+      where: 'key = ?',
+      whereArgs: [_syncLockKey],
+    );
+    if (rows.isNotEmpty) {
+      final expires =
+          int.tryParse(rows.first['value']?.toString() ?? '0') ?? 0;
+      if (expires > now) return false;
+    }
+    await db.insert(
+      'app_settings',
+      {
+        'key': _syncLockKey,
+        'value': '${now + ttl.inMilliseconds}',
+      },
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+    return true;
+  }
+
+  Future<void> releaseSyncLock() async {
+    final db = await database;
+    await _ensureAppSettingsTable(db);
+    await db.delete(
+      'app_settings',
+      where: 'key = ?',
+      whereArgs: [_syncLockKey],
+    );
+  }
 }
 

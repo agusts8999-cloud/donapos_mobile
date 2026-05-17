@@ -321,4 +321,20 @@ error - Undefined name IntegrationTestWidgetsFlutterBinding
 
 ---
 
-*Dokumen ini adalah catatan temuan. Untuk langkah perbaikan dan tracking, gunakan [RENCANA_PERBAIKAN.md](RENCANA_PERBAIKAN.md).*
+## Stabilitas runtime tablet (force-close sesi panjang)
+
+Gejala: APK force-close setelah berjalan beberapa jam; dapat terjadi di layar mana pun.
+
+| ID | Temuan | Mitigasi |
+|----|--------|----------|
+| CRASH-01 | Sync foreground tanpa await, overlap | FIX-01 `sync_service.dart` |
+| CRASH-02 | Workmanager tanpa Flutter binding | FIX-02 `callbackDispatcher` |
+| CRASH-03 | Lock sync tidak cross-isolate | FIX-03 `app_settings` sync lock di `db_helper.dart` |
+| CRASH-04 | Rebuild POS tiap 30 detik | FIX-04 `unsyncedCountNotifier` |
+| CRASH-05–07 | Memori gambar + setState keranjang | FIX-05–09 |
+
+Detail implementasi dan soak test: [RENCANA_CRASH_TABLET.md](RENCANA_CRASH_TABLET.md).
+
+---
+
+*Dokumen ini adalah catatan temuan. Untuk langkah perbaikan dan tracking, gunakan [RENCANA_PERBAIKAN.md](RENCANA_PERBAIKAN.md) dan [RENCANA_CRASH_TABLET.md](RENCANA_CRASH_TABLET.md).*

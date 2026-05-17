@@ -312,10 +312,9 @@ packages:
   flutter_pos_printer_platform_image_3:
     dependency: "direct main"
     description:
-      name: flutter_pos_printer_platform_image_3
-      sha256: d640f9337bb929182784d99b938eb54799787e6093905dbbe40de34c20881694
-      url: "https://pub.dev"
-    source: hosted
+      path: "packages/flutter_pos_printer_platform_image_3"
+      relative: true
+    source: path
     version: "1.2.3"
   flutter_presentation_display:
     dependency: "direct main"

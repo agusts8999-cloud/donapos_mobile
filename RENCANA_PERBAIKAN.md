@@ -150,6 +150,13 @@ flowchart TD
 | AUD-HK-02, AUD-HK-03 | REF-04 |
 | AUD-HK-04 | QA-01, QA-03 |
 | AUD-HK-05 | _(housekeeping saat refactor API)_ |
+| CRASH-01 … CRASH-07 | FIX-01 … FIX-11 — lihat [RENCANA_CRASH_TABLET.md](RENCANA_CRASH_TABLET.md) |
+
+---
+
+## Stabilitas tablet (crash sesi panjang)
+
+Rencana khusus force-close setelah running lama: **[RENCANA_CRASH_TABLET.md](RENCANA_CRASH_TABLET.md)** (FIX-01 … FIX-15, soak test manual).
 
 ---
 

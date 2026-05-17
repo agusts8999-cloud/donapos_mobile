@@ -44,7 +44,8 @@ dependencies:
   # Windows Desktop Support
   sqflite_common_ffi: ^2.3.3
   sqlite3_flutter_libs: ^0.5.24
-  flutter_pos_printer_platform_image_3: ^1.1.2
+  flutter_pos_printer_platform_image_3:
+    path: ./packages/flutter_pos_printer_platform_image_3
 
 dependency_overrides:
   sqflite_android: 2.4.1

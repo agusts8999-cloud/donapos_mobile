@@ -32,9 +32,11 @@ class PosProvider with ChangeNotifier {
   // Price Cache
   Map<int, double> _displayPrices = {};
   
-  // Sync Status
+  // Sync Status — ValueNotifier avoids rebuilding entire POS every 30s
   int _unsyncedCount = 0;
+  final ValueNotifier<int> unsyncedCountNotifier = ValueNotifier(0);
   Timer? _refreshTimer;
+  bool _refreshPaused = false;
   
   // Getters
   bool get isLoading => _isLoading;
@@ -106,10 +108,25 @@ class PosProvider with ChangeNotifier {
 
   Future<void> updateUnsyncedCount() async {
     _unsyncedCount = await DatabaseHelper.instance.getUnsyncedCount();
-    notifyListeners();
+    if (unsyncedCountNotifier.value != _unsyncedCount) {
+      unsyncedCountNotifier.value = _unsyncedCount;
+    }
+  }
+
+  void pauseRefresh() {
+    _refreshPaused = true;
+    _refreshTimer?.cancel();
+    _refreshTimer = null;
+  }
+
+  void resumeRefresh() {
+    _refreshPaused = false;
+    _startSyncTimer();
+    updateUnsyncedCount();
   }
 
   void _startSyncTimer() {
+    if (_refreshPaused) return;
     _refreshTimer?.cancel();
     _refreshTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
       updateUnsyncedCount();
@@ -119,6 +136,7 @@ class PosProvider with ChangeNotifier {
   @override
   void dispose() {
     _refreshTimer?.cancel();
+    unsyncedCountNotifier.dispose();
     super.dispose();
   }
   

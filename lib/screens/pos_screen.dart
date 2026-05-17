@@ -70,6 +70,7 @@ import 'package:donapos_mobile/utils_storage.dart';
 import 'package:donapos_mobile/screens/admin/local_data_check_dialog.dart';
 import 'package:donapos_mobile/widgets/product_label_final.dart';
 import 'package:donapos_mobile/screens/admin_dashboard.dart';
+import 'package:donapos_mobile/app_route_observer.dart';
 
 class PosScreen extends StatefulWidget {
   const PosScreen({super.key});
@@ -78,7 +79,9 @@ class PosScreen extends StatefulWidget {
   State<PosScreen> createState() => _PosScreenState();
 }
 
-class _PosScreenState extends State<PosScreen> {
+class _PosScreenState extends State<PosScreen> with RouteAware {
+  bool _routeSubscribed = false;
+
   // Logic & Controllers
   late PosCartController _cartController;
   late PosProvider _posProvider;
@@ -172,6 +175,21 @@ class _PosScreenState extends State<PosScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     ScreenScaler.init(context);
+    final route = ModalRoute.of(context);
+    if (!_routeSubscribed && route is PageRoute) {
+      appRouteObserver.subscribe(this, route);
+      _routeSubscribed = true;
+    }
+  }
+
+  @override
+  void didPushNext() {
+    _posProvider.pauseRefresh();
+  }
+
+  @override
+  void didPopNext() {
+    _posProvider.resumeRefresh();
   }
 
   @override
@@ -192,9 +210,8 @@ class _PosScreenState extends State<PosScreen> {
   }
   
   void _onCartChanged() {
-      if (mounted) {
-          setState(() {}); 
-          if (_secondScreenEnabled) _updateSecondaryDisplay();
+      if (_secondScreenEnabled && mounted) {
+          _updateSecondaryDisplay();
       }
   }
   
@@ -210,6 +227,10 @@ class _PosScreenState extends State<PosScreen> {
 
   @override
   void dispose() {
+    if (_routeSubscribed) {
+      appRouteObserver.unsubscribe(this);
+    }
+    _posProvider.pauseRefresh();
     _cartController.removeListener(_onCartChanged);
     _scanFocusNode.removeListener(_onScanFocusChange);
     _marqueeTimer?.cancel();
@@ -416,58 +437,72 @@ class _PosScreenState extends State<PosScreen> {
                           ),
                         ),
                       
-                      // APP BAR
+                      // APP BAR — rebuild only on cart/unsynced changes, not full provider tick
                       SizedBox(
-                          height: kToolbarHeight, 
-                          child: PosAppBar(
-                            isClockedIn: true, 
-                            businessName: _businessInfo['name'] ?? 'Donapos',
-                            cashierName: _cashierName,
-                            invoiceNumber: _getInvoiceNumber(isDraft: true),
-                            saleTypeLabel: _getTypeLabel(pos.selectedPriceGroupId),
-                            selectedTableName: _selectedTable != null ? '${_selectedTable!.name} (${_pax > 0 ? "$_pax P" : "0 P"})' : null,
-                            hasCartItems: _cartController.hasItems,
-                            selectedCustomerName: _selectedCustomer != null 
-                                ? "${_selectedCustomer!['contact_id'] ?? ''} - ${_selectedCustomer!['name']}"
-                                : null,
-                            selectedWaiterName: _selectedWaiter?.firstName,
-                            isResuming: _isResuming,
-                            headerScrollController: _headerScrollController,
-                            actionsScrollController: _actionsScrollController,
-                            onMenuPressed: _showMainMenu,
-                            onSaleTypePressed: _openSaleTypeSelector,
-                            onHoldListPressed: _openHeldOrdersList,
-                            onTablePressed: _openTableSelector,
-                            onBillPressed: () {
-                                if (!_cartController.hasItems) {
-                                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('KERANJANG KOSONG')));
-                                   return;
-                                }
-                                _showReceiptSimulationDialog(isPreview: true);
+                          height: kToolbarHeight,
+                          child: ValueListenableBuilder<int>(
+                            valueListenable: pos.unsyncedCountNotifier,
+                            builder: (context, unsyncedCount, _) {
+                              return ListenableBuilder(
+                                listenable: _cartController,
+                                builder: (context, _) => PosAppBar(
+                                  isClockedIn: true,
+                                  businessName: _businessInfo['name'] ?? 'Donapos',
+                                  cashierName: _cashierName,
+                                  invoiceNumber: _getInvoiceNumber(isDraft: true),
+                                  saleTypeLabel: _getTypeLabel(pos.selectedPriceGroupId),
+                                  selectedTableName: _selectedTable != null
+                                      ? '${_selectedTable!.name} (${_pax > 0 ? "$_pax P" : "0 P"})'
+                                      : null,
+                                  hasCartItems: _cartController.hasItems,
+                                  selectedCustomerName: _selectedCustomer != null
+                                      ? "${_selectedCustomer!['contact_id'] ?? ''} - ${_selectedCustomer!['name']}"
+                                      : null,
+                                  selectedWaiterName: _selectedWaiter?.firstName,
+                                  isResuming: _isResuming,
+                                  headerScrollController: _headerScrollController,
+                                  actionsScrollController: _actionsScrollController,
+                                  onMenuPressed: _showMainMenu,
+                                  onSaleTypePressed: _openSaleTypeSelector,
+                                  onHoldListPressed: _openHeldOrdersList,
+                                  onTablePressed: _openTableSelector,
+                                  onBillPressed: () {
+                                    if (!_cartController.hasItems) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(content: Text('KERANJANG KOSONG')),
+                                      );
+                                      return;
+                                    }
+                                    _showReceiptSimulationDialog(isPreview: true);
+                                  },
+                                  onKitchenPrintPressed: () {
+                                    if (!_cartController.hasItems) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(content: Text('KERANJANG KOSONG')),
+                                      );
+                                      return;
+                                    }
+                                    _confirmPrintKitchenOrder();
+                                  },
+                                  onSearchPressed: _openSearchDialog,
+                                  onScanPressed: _toggleScanMode,
+                                  onCustomerPressed: _showCustomerSelector,
+                                  onWaiterPressed: _showWaiterSelector,
+                                  onDiscountPressed: _showManualDiscountDialog,
+                                  onSyncPressed: _handleSyncTap,
+                                  onCalculatorPressed: _showCalculator,
+                                  calculatorEnabled: _calculatorEnabled,
+                                  billEnabled: _showBillButton,
+                                  kitchenEnabled: _showKitchenButton,
+                                  discountEnabled: _showDiscountButton,
+                                  isScanMode: _isScanMode,
+                                  unsyncedCount: unsyncedCount,
+                                  isDemo: _isDemoMode,
+                                  onActionsPointerDown: (e) => _marqueeTimer?.cancel(),
+                                  onCloseAppPressed: _handleShiftClosing,
+                                ),
+                              );
                             },
-                            onKitchenPrintPressed: () {
-                                if (!_cartController.hasItems) {
-                                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('KERANJANG KOSONG')));
-                                   return;
-                                }
-                                _confirmPrintKitchenOrder();
-                            },
-                            onSearchPressed: _openSearchDialog,
-                            onScanPressed: _toggleScanMode,
-                            onCustomerPressed: _showCustomerSelector,
-                            onWaiterPressed: _showWaiterSelector,
-                            onDiscountPressed: _showManualDiscountDialog,
-                            onSyncPressed: _handleSyncTap,
-                            onCalculatorPressed: _showCalculator,
-                            calculatorEnabled: _calculatorEnabled,
-                            billEnabled: _showBillButton,
-                            kitchenEnabled: _showKitchenButton,
-                            discountEnabled: _showDiscountButton,
-                            isScanMode: _isScanMode,
-                            unsyncedCount: pos.unsyncedCount,
-                            isDemo: _isDemoMode,
-                            onActionsPointerDown: (e) => _marqueeTimer?.cancel(),
-                            onCloseAppPressed: _handleShiftClosing,
                           ),
                       ),
   
@@ -502,39 +537,45 @@ class _PosScreenState extends State<PosScreen> {
                                     },
                                 ),
                             ),
-                            // COL 2: GRID (Products)
+                            // COL 2+3: rebuild on cart changes only (not every 30s unsynced tick)
                             Expanded(
-                                flex: 6,
-                                child: PosProductGrid(
-                                    products: pos.products,
-                                    displayPrices: pos.displayPrices,
-                                    cart: _cartController.cart,
-                                    activeDiscounts: _cartController.activeDiscounts,
-                                    discountVariations: _cartController.discountVariations,
-                                    activeLocalDiscount: _cartController.activeLocalDiscount,
-                                    selectedPriceGroupId: pos.selectedPriceGroupId,
-                                    onProductTap: (p, price) => _handleTileTap(p),
-                                    productsWithModifiers: pos.productsWithModifiers,
-                                    isAnimEnabled: _animProductEnabled,
-                                )
+                              flex: 6,
+                              child: ListenableBuilder(
+                                listenable: _cartController,
+                                builder: (context, _) => PosProductGrid(
+                                  products: pos.products,
+                                  displayPrices: pos.displayPrices,
+                                  cart: _cartController.cart,
+                                  activeDiscounts: _cartController.activeDiscounts,
+                                  discountVariations: _cartController.discountVariations,
+                                  activeLocalDiscount: _cartController.activeLocalDiscount,
+                                  selectedPriceGroupId: pos.selectedPriceGroupId,
+                                  onProductTap: (p, price) => _handleTileTap(p),
+                                  productsWithModifiers: pos.productsWithModifiers,
+                                  isAnimEnabled: _animProductEnabled,
+                                ),
+                              ),
                             ),
-                            // COL 3: CART & ACTIONS
                             SizedBox(
-                                width: 320.sc, // Explicit width for cart panel
-                                child: PosCartPanel(
-                                    cart: _cartController.cart,
-                                    subtotal: _cartController.subtotal,
-                                    calculatedDiscount: _cartController.effectiveDiscount,
-                                    calculatedTax: _cartController.calculatedTax,
-                                    finalTotal: _cartController.finalTotal,
-                                    invoiceNumber: _getInvoiceNumber(isDraft: true),
-                                    interactionMode: _interactionMode,
-                                    onInteractionModeChanged: (mode) => setState(() => _interactionMode = mode),
-                                    onPayPressed: _showPaymentDialog,
-                                    onHoldPressed: _holdTransaction,
-                                    onItemTap: _editCartItem,
-                                )
-                            )
+                              width: 320.sc,
+                              child: ListenableBuilder(
+                                listenable: _cartController,
+                                builder: (context, _) => PosCartPanel(
+                                  cart: _cartController.cart,
+                                  subtotal: _cartController.subtotal,
+                                  calculatedDiscount: _cartController.effectiveDiscount,
+                                  calculatedTax: _cartController.calculatedTax,
+                                  finalTotal: _cartController.finalTotal,
+                                  invoiceNumber: _getInvoiceNumber(isDraft: true),
+                                  interactionMode: _interactionMode,
+                                  onInteractionModeChanged: (mode) =>
+                                      setState(() => _interactionMode = mode),
+                                  onPayPressed: _showPaymentDialog,
+                                  onHoldPressed: _holdTransaction,
+                                  onItemTap: _editCartItem,
+                                ),
+                              ),
+                            ),
                           ]
                         )
                       )
@@ -679,17 +720,30 @@ class _PosScreenState extends State<PosScreen> {
 
   void _editCartItem(CartItem item, int index) async {
       final controller = TextEditingController(text: item.note);
-      await showDialog(context: context, builder: (context) => AlertDialog(
-          title: const Text('Add Note'),
-          content: TextField(controller: controller),
-          actions: [
-              TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
-              ElevatedButton(onPressed: () {
+      try {
+        await showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Add Note'),
+            content: TextField(controller: controller),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel'),
+              ),
+              ElevatedButton(
+                onPressed: () {
                   _cartController.updateNote(index, controller.text);
                   Navigator.pop(context);
-              }, child: const Text('Save'))
-          ],
-      ));
+                },
+                child: const Text('Save'),
+              ),
+            ],
+          ),
+        );
+      } finally {
+        controller.dispose();
+      }
    }
 
   // --- LOGIC: TRANSACTION ---
@@ -1025,7 +1079,10 @@ class _PosScreenState extends State<PosScreen> {
       final noteController = TextEditingController(text: randomCode);
       noteController.selection = TextSelection(baseOffset: 0, extentOffset: randomCode.length);
 
-      bool? confirm = await showDialog<bool>(
+      bool? confirm;
+      String holdNote = '';
+      try {
+      confirm = await showDialog<bool>(
           context: context,
           builder: (ctx) => AlertDialog(
               title: const Text('HOLD TRANSAKSI?', style: TextStyle(fontWeight: FontWeight.w900)),
@@ -1066,10 +1123,15 @@ class _PosScreenState extends State<PosScreen> {
               ],
           )
       );
-      
+      if (confirm == true) {
+        holdNote = noteController.text.trim();
+      }
+      } finally {
+        noteController.dispose();
+      }
+
       if (confirm != true) return;
 
-      String holdNote = noteController.text.trim();
       if (holdNote.isEmpty) {
           holdNote = (1000 + Random().nextInt(9000)).toString();
       }
@@ -1241,7 +1303,8 @@ class _PosScreenState extends State<PosScreen> {
   Future<void> _showManualTableEntry() async {
       final textController = TextEditingController();
       final paxController = TextEditingController(text: '1');
-      
+
+      try {
       await showDialog(
           context: context,
           builder: (ctx) => AlertDialog(
@@ -1314,6 +1377,10 @@ class _PosScreenState extends State<PosScreen> {
               ],
           )
       );
+      } finally {
+        textController.dispose();
+        paxController.dispose();
+      }
   }
 
   String _getInvoiceNumber({bool isDraft = false}) {
@@ -1520,8 +1587,8 @@ class _PosScreenState extends State<PosScreen> {
                   child: Text('OK', style: TextStyle(color: MetroColors.primary, fontWeight: FontWeight.w900))
                 )
               ]
-          )
-       );
+          ),
+       ).whenComplete(controller.dispose);
   }
   
   void _toggleScanMode() {
