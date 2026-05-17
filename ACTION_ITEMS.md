@@ -1,4 +1,8 @@
-# 🎯 Action Items - DonaPOS Mobile
+> **Dokumen usang (v1.5.0, Jan 2026).** Gunakan dokumen audit terbaru:
+> - [AUDIT_CATATAN.md](AUDIT_CATATAN.md) — temuan teknis (audit 17 Mei 2026, app v2.8.0)
+> - [RENCANA_PERBAIKAN.md](RENCANA_PERBAIKAN.md) — rencana perbaikan & tracking task
+
+# Action Items - DonaPOS Mobile
 
 Berikut adalah daftar prioritas tindakan berdasarkan review teknis aplikasi DonaPOS Mobile v1.5.0.
 

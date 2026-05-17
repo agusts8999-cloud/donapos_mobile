@@ -1,4 +1,8 @@
-# 📋 Review Aplikasi Mobile DonaPOS
+> **Dokumen usang (v1.5.0, Jan 2026).** Gunakan dokumen audit terbaru:
+> - [AUDIT_CATATAN.md](AUDIT_CATATAN.md) — temuan teknis (audit 17 Mei 2026, app v2.8.0)
+> - [RENCANA_PERBAIKAN.md](RENCANA_PERBAIKAN.md) — rencana perbaikan & tracking task
+
+# Review Aplikasi Mobile DonaPOS
 **Tanggal Review:** 22 Januari 2026  
 **Reviewer:** AI Technical Review  
 **Versi Aplikasi:** 1.5.0 (Build 18)
